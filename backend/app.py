@@ -1,10 +1,8 @@
 import time
 from flask import Flask
 from mongoengine import connect
-from backend.rest import post
 from backend.models.post import Post
 from lorem_text import lorem
-from backend.views.quotes_view import QuotesView
 from backend.views.posts_view import PostsView
 import logging
 
@@ -14,7 +12,7 @@ def initiate_collection_for_test():
 
     posts = []
     for i in range(10):
-        title = lorem.sentence()
+        title = lorem.words(5)
         content = lorem.paragraphs(1)
         writer = '작성자 {}'.format(i + 1)
 
