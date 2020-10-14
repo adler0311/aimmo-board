@@ -13,11 +13,10 @@ post_schema = PostSchema()
 class PostsView(FlaskView):
     def index(self):
         try:
-            objects = Post.objects()
-            posts = [] if len(objects) == 0 else objects
+            posts = Post.objects()
             result = posts_schema.dump(posts)
-
             return {'posts': result}
+
         except Exception as e:
             logging.debug(e)
             return 'Internal Server Error', 500

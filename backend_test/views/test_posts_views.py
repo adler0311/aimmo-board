@@ -4,14 +4,20 @@ from unittest import mock
 from pytest_flask.plugin import JSONResponse
 from bson import ObjectId
 from mongoengine import DoesNotExist
+from backend.models.post import Post
+from backend.schemas.post_schema import PostSchema
 
 
 @pytest.fixture
 def posts():
-    return [{'_id': "5f85469378ebc3de6b8cf154", 'title': 'title1', 'content': 'content1'},
-            {'_id': "5f85469378ebc3de6b8cf155",
-                'title': 'title2', 'content': 'content2'},
-            {'_id': "5f85469378ebc3de6b8cf156", 'title': 'title3', 'content': 'content3'}]
+    p1 = Post(title='title1', content='content1', writer='writer1')
+    p1.pk = '5f85469378ebc3de6b8cf154'
+    p2 = Post(title='title2', content='content2', writer='writer2')
+    p2.pk = '5f85469378ebc3de6b8cf154'
+    p3 = Post(title='title3', content='content3', writer='writer3')
+    p3.pk = '5f85469378ebc3de6b8cf154'
+
+    return [p1, p2, p3]
 
 
 @mock.patch("backend.views.posts_view.Post")
@@ -22,7 +28,8 @@ def test_get_posts(mock_post, client, posts):
 
     assert http_response.status_code == 200
 
-    result = {'posts': posts}
+    schema = PostSchema(many=True)
+    result = {'posts': schema.dump(posts)}
     data = json.loads(http_response.data)
     assert result == data
 
@@ -46,10 +53,11 @@ def test_get_post(mock_post, client, posts):
     p = posts[0]
     mock_post.objects.get.return_value = p
 
-    http_response: JSONResponse = client.get('/posts/{}/'.format(p['_id']))
+    http_response: JSONResponse = client.get('/posts/{}/'.format(p.pk))
 
     assert http_response.status_code == 200
-    result = {'data': p}
+    schema = PostSchema()
+    result = {'data': schema.dump(p)}
     data = json.loads(http_response.data)
     assert result == data
 
