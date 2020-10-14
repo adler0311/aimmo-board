@@ -44,3 +44,21 @@ class PostsView(FlaskView):
             return {'data': result}, 200
         except DoesNotExist as e:
             return jsonify({'message': 'Post matching query does not exist'}), 404
+
+    def put(self, id):
+        json_data = request.get_json()
+        if not json_data:
+            return jsonify({'message': 'No input data provided'}), 400
+
+        try:
+            data = post_schema.load(json_data)
+        except ValueError as err:
+            return jsonify(err.messages), 422
+
+        result = Post.objects(pk=id).update_one(
+            title=data['title'], content=data['content'])
+
+        if result is None:
+            return jsonify({'message': 'Post matching id does not exist'}), 404
+
+        return {'result': True}, 200

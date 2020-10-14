@@ -62,3 +62,20 @@ def test_get_post_which_not_exist_id(mock_post, client, posts):
     http_response = client.get('/posts/{}/'.format(invalid_object_id))
 
     assert http_response.status_code == 404
+
+
+@mock.patch("backend.views.posts_view.Post")
+def test_put_post(mock_post, client, posts):
+    p = posts[0]
+
+    headers = {'Content-Type': 'application/json'}
+    data = {
+        'title': '제목',
+        'content': '내용',
+        'writer': '작성자'
+    }
+
+    response = client.put(
+        '/posts/{}/'.format(p['_id']), data=json.dumps(data), headers=headers)
+
+    assert response.status_code == 200
