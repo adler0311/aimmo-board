@@ -1,4 +1,5 @@
 from marshmallow import Schema, fields, ValidationError
+from backend.schemas.comment_schema import CommentSchema
 
 
 class PostSchema(Schema):
@@ -6,3 +7,4 @@ class PostSchema(Schema):
     title = fields.Str()
     content = fields.Str()
     writer = fields.Str()
+    comments = fields.Nested(CommentSchema(many=True))
