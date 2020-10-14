@@ -79,3 +79,22 @@ def test_put_post(mock_post, client, posts):
         '/posts/{}/'.format(p['_id']), data=json.dumps(data), headers=headers)
 
     assert response.status_code == 200
+
+
+@mock.patch("backend.views.posts_view.Post")
+def test_delete_post(mock_post, client, posts):
+    p = posts[0]
+    response = client.delete('/posts/{}/'.format(p['_id']))
+
+    assert response.status_code == 200
+
+
+@mock.patch("backend.views.posts_view.Post")
+def test_delete_which_not_exist(mock_post, client, posts):
+    objects = mock_post.objects()
+    objects.delete.return_value = 0
+
+    p = posts[0]
+    response = client.delete('/posts/{}/'.format(p['_id']))
+
+    assert response.status_code == 404

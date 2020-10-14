@@ -39,3 +39,15 @@ class TestPostModel(TestCase):
 
         modified = Post.objects().first()
         assert modified.title == '변경된 제목'
+
+    def test_delete(self):
+        data = {'title': '제목', 'content': '내용', 'writer': '작성자'}
+        p = Post(**data)
+        p.save()
+        p = Post.objects().first()
+        assert p.title == '제목'
+
+        id = p.id
+        result = Post.objects(pk=id).delete()
+
+        assert len(Post.objects) == 0

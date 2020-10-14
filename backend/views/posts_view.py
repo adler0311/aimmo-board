@@ -62,3 +62,11 @@ class PostsView(FlaskView):
             return jsonify({'message': 'Post matching id does not exist'}), 404
 
         return {'result': True}, 200
+
+    def delete(self, id):
+        result = Post.objects(pk=id).delete()
+
+        if not result:
+            return jsonify({'message': 'Post matching id does not exist'}), 404
+
+        return {'result': True}, 200
