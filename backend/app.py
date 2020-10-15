@@ -2,16 +2,19 @@ import time
 from flask import Flask
 from mongoengine import connect
 from backend.models.post import Post
+from backend.models.user import User
 from backend.models.comment import Comment
 from lorem_text import lorem
 from backend.views.posts_view import PostsView
 from backend.views.comments_view import CommentsView
+from backend.views.users_view import UsersView
 import logging
 
 
 def initiate_collection_for_test():
     Post.objects.delete()
     Comment.objects.delete()
+    User.objects.delete()
 
     title = "댓글 있는 글"
     content = lorem.paragraphs(1)
@@ -51,4 +54,5 @@ def create_app():
 
     PostsView.register(app)
     CommentsView.register(app)
+    UsersView.register(app)
     return app
