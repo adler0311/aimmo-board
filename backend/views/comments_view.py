@@ -1,5 +1,5 @@
 from flask import request, jsonify
-from flask_classful import FlaskView
+from flask_classful import FlaskView, route
 from backend.models.comment import Comment
 from backend.schemas.comment_schema import CommentSchema
 from mongoengine import DoesNotExist
@@ -11,11 +11,14 @@ comment_schema = CommentSchema()
 
 
 class CommentsView(FlaskView):
-    def index(self):
+    route_base = '/posts/'
+
+    @route('/<string:post_id>/comments/')
+    def post_comments(self, post_id):
         try:
-            comments = Comment.objects()
+            comments = Comment.objects(post_id=post_id)
             result = comments_schema.dump(comments)
-            return {'comments': result}
+            return {'comments': result, 'postId': post_id}
 
         except Exception as e:
             logging.debug(e)

@@ -11,14 +11,23 @@ import logging
 
 def initiate_collection_for_test():
     Post.objects.delete()
+    Comment.objects.delete()
+
+    title = "댓글 있는 글"
+    content = lorem.paragraphs(1)
+    writer = '작성자 00'
+    post = Post(title=title, content=content, writer=writer)
+    post.save()
 
     comments = []
     for i in range(5):
         c_comment = lorem.words(3)
         writer = '댓글 작성자 {}'.format(i + 1)
-        comments.append(Comment(content=c_comment, writer=writer))
+        comments.append(Comment(content=c_comment,
+                                writer=writer, post_id=post.id))
 
     Comment.objects.insert(comments)
+    Post.objects(id=post.id).update_one(comments=comments)
 
     posts = []
     for i in range(10):
@@ -27,7 +36,7 @@ def initiate_collection_for_test():
         writer = '작성자 {}'.format(i + 1)
 
         posts.append({'title': title, 'content': content,
-                      'writer': writer, 'comments': comments})
+                      'writer': writer})
 
     Post.objects.insert([Post(**data) for data in posts])
 
@@ -41,5 +50,5 @@ def create_app():
     app = Flask(__name__)
 
     PostsView.register(app)
-    # CommentsView.register(app, route_prefix='/posts/<p')
+    CommentsView.register(app)
     return app
