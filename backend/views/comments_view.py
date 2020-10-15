@@ -1,6 +1,7 @@
 from flask import request, jsonify
 from flask_classful import FlaskView, route
 from backend.models.comment import Comment
+from backend.models.post import Post
 from backend.schemas.comment_schema import CommentSchema
 from mongoengine import DoesNotExist
 
@@ -14,7 +15,7 @@ class CommentsView(FlaskView):
     route_base = '/posts/'
 
     @route('/<string:post_id>/comments/')
-    def post_comments(self, post_id):
+    def comments(self, post_id):
         try:
             comments = Comment.objects(post_id=post_id)
             result = comments_schema.dump(comments)
@@ -24,20 +25,24 @@ class CommentsView(FlaskView):
             logging.debug(e)
             return 'Internal Server Error', 500
 
-    # def post(self):
-    #     json_data = request.get_json()
-    #     if not json_data:
-    #         return jsonify({'message': 'No input data provided'}), 400
+    @route('/<string:post_id>/comments/', methods=['POST'])
+    def post_comment(self, post_id):
+        json_data = request.get_json()
+        if not json_data:
+            return jsonify({'message': 'No input data provided'}), 400
 
-    #     try:
-    #         data = post_schema.load(json_data)
-    #     except ValueError as err:
-    #         return jsonify(err.messages), 422
+        try:
+            data = comment_schema.load(json_data)
+        except ValueError as err:
+            return jsonify(err.messages), 400
 
-    #     p = Post(**data)
-    #     p.save()
+        c = Comment(**data, post_id=post_id)
+        c.save()
 
-    #     return {'result': True}, 201
+        p = Post.objects.get(id=post_id)
+        Post.objects(pk=p.id).update_one(comments=[c] + p.comments)
+
+        return {'result': True}, 201
 
     # def get(self, id):
     #     try:
