@@ -1,5 +1,5 @@
 from flask import request, jsonify
-from flask_classful import FlaskView
+from flask_classful import FlaskView, route
 from mongoengine import DoesNotExist
 from backend.schemas.user_schema import UserSchema
 from backend.models.user import User
