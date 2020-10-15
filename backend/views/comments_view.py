@@ -4,6 +4,7 @@ from backend.models.comment import Comment
 from backend.models.post import Post
 from backend.schemas.comment_schema import CommentSchema
 from mongoengine import DoesNotExist
+from bson import ObjectId
 
 import logging
 
@@ -52,28 +53,33 @@ class CommentsView(FlaskView):
     #     except DoesNotExist as e:
     #         return jsonify({'message': 'Post matching query does not exist'}), 404
 
-    # def put(self, id):
-    #     json_data = request.get_json()
-    #     if not json_data:
-    #         return jsonify({'message': 'No input data provided'}), 400
+    @route('/<string:post_id>/comments/<string:comment_id>', methods=['PUT'])
+    def put_comment(self, post_id, comment_id):
+        json_data = request.get_json()
+        if not json_data:
+            return jsonify({'message': 'No input data provided'}), 400
 
-    #     try:
-    #         data = post_schema.load(json_data)
-    #     except ValueError as err:
-    #         return jsonify(err.messages), 422
+        try:
+            data = comment_schema.load(json_data)
+        except ValueError as err:
+            return jsonify(err.messages), 400
 
-    #     result = Post.objects(pk=id).update_one(
-    #         title=data['title'], content=data['content'])
+        result = Comment.objects(pk=comment_id).update_one(content=data['content'],
+                                                           writer=data['writer'])
+        if result == 0:
+            return jsonify({'message': 'Comment matching id does not exist'}), 404
 
-    #     if result is None:
-    #         return jsonify({'message': 'Post matching id does not exist'}), 404
+        return {'result': True}, 200
 
-    #     return {'result': True}, 200
+    @route('/<string:post_id>/comments/<string:comment_id>/', methods=['DELETE'])
+    def delete(self, post_id, comment_id):
+        result = Comment.objects(pk=comment_id).delete()
 
-    # def delete(self, id):
-    #     result = Post.objects(pk=id).delete()
+        p = Post.objects.get(pk=post_id)
+        result2 = Post.objects(pk=p.id).update_one(comments=list(
+            filter(lambda c: c.id != ObjectId(comment_id), p.comments)))
 
-    #     if not result:
-    #         return jsonify({'message': 'Post matching id does not exist'}), 404
+        if not result:
+            return jsonify({'message': 'Comment matching id does not exist'}), 404
 
-    #     return {'result': True}, 200
+        return {'result': True}, 200

@@ -42,3 +42,22 @@ class TestCommentModel(TestCase):
         comment = Comment.objects(post_id='5f85469378ebc3de6b8cf154')
 
         assert len(comment) > 0
+
+    def test_put_comment_by_post_id(self):
+        Comment.objects.insert([Comment(**c) for c in self.comments])
+        c: Comment = Comment.objects.first()
+
+        result = Comment.objects(pk=c.pk).update_one(content="업데이트 내용")
+
+        assert result == 1
+        assert Comment.objects.get(id=c.pk).content == "업데이트 내용"
+
+    def test_delete_comment_by_post_id(self):
+        Comment.objects.insert([Comment(**c) for c in self.comments])
+        c: Comment = Comment.objects.first()
+
+        result = Comment.objects(pk=c.pk).delete()
+
+        assert result == 1
+        comments = Comment.objects(id=c.pk)
+        assert len(comments) == 0

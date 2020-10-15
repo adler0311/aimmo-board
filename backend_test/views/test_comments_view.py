@@ -4,6 +4,7 @@ from unittest import mock
 from pytest_flask.plugin import JSONResponse
 from bson import ObjectId
 from mongoengine import DoesNotExist
+from typing import List
 
 
 from backend.models.post import Post
@@ -60,6 +61,38 @@ def test_add_comment(mock_comment_schema, mock_post, mock_comment, client):
         '/posts/{}/comments/'.format(dummy_post_id), data=json.dumps(data), headers=headers)
 
     assert response.status_code == 201
+
+
+@mock.patch("backend.views.comments_view.Comment")
+def test_put_comment(mock_comment, client, comments: List[Comment]):
+    mock_comment.objects.update_one.return_value = 1
+    dummy_post_id = '5f85469378ebc3de6b8cf156'
+
+    c = comments[0]
+
+    headers = {'Content-Type': 'application/json'}
+    data = {
+        'content': '내용',
+        'writer': '작성자',
+    }
+
+    response = client.put(
+        '/posts/{post_id}/comments/{comment_id}'.format(
+            post_id=dummy_post_id, comment_id=c.pk),
+        data=json.dumps(data), headers=headers)
+
+    assert response.status_code == 200
+
+
+@mock.patch("backend.views.comments_view.Comment")
+@mock.patch("backend.views.comments_view.Post")
+def test_delete_comment(mock_post, mock_comment, client, comments: List[Comment]):
+    dummy_post_id = '5f85469378ebc3de6b8cf156'
+    c = comments[0]
+    response = client.delete(
+        '/posts/{post_id}/comments/{comment_id}'.format(post_id=dummy_post_id, comment_id=c.pk))
+
+    assert response.status_code == 200
 
 
 # @mock.patch("backend.views.comments_view.CommentSchema")
