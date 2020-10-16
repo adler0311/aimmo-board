@@ -47,6 +47,8 @@ class PostsView(FlaskView):
 
     def put(self, id):
         token = request.headers.get('Authorization')
+        if token is None:
+            return jsonify({'message': 'token required'}), 401
 
         json_data = request.get_json()
         if not json_data:
@@ -57,11 +59,15 @@ class PostsView(FlaskView):
         except ValueError as err:
             return jsonify(err.messages), 422
 
-        auth_token = AuthToken.objects.get(token=token)
+        try:
+            auth_token = AuthToken.objects.get(token=token)
+        except DoesNotExist as e:
+            return jsonify({'message': 'not authenticated'}), 401
+
         post = Post.objects.get(pk=id)
 
-        if post.user.id != auth_token.user.id:
-            return jsonify({'message': 'authentication required'}), 401
+        if post.writer.id != auth_token.user.id:
+            return jsonify({'message': 'not authorized'}), 403
 
         result = Post.objects(pk=id).update_one(
             title=data['title'], content=data['content'])

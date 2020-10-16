@@ -27,10 +27,10 @@ def test_filtering_password():
 
 def test_dump_with_pk():
     user = User(user_id='user123', password='123')
-    saved = user.save()
+    user.pk = '5f85469378ebc3de6b8cf152'
 
-    schema = UserSchema(only=['user_id'])
-    r = schema.dump(saved)
+    schema = UserSchema(only=['user_id', '_id'])
+    r = schema.dump(user)
 
     assert r is not None
     assert '_id' in r

@@ -6,6 +6,5 @@ from backend.models.user import User
 class Post(Document):
     title = StringField()
     content = StringField()
-    writer = StringField()
     comments = ListField(ReferenceField(Comment))
-    user = ReferenceField(User)
+    writer = ReferenceField(User)

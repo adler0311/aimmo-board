@@ -112,12 +112,12 @@ def test_delete_which_not_exist(mock_post, client, posts):
 
 @mock.patch("backend.views.posts_view.AuthToken")
 @mock.patch("backend.views.posts_view.Post")
-def test_put_not_authenticated(mock_post, mock_auth_token, client, posts):
+def test_put_not_authorized(mock_post, mock_auth_token, client, posts):
     post_pk = 'pf85469378ebc3de6b8cf154'
 
     writer = User()
     writer.pk = 'uf85469378ebc3de6b8cf154'
-    post = Post(user=writer)
+    post = Post(writer=writer)
     post.pk = post_pk
 
     token = 'dummy_token'
@@ -133,24 +133,23 @@ def test_put_not_authenticated(mock_post, mock_auth_token, client, posts):
     headers = {'Content-Type': 'application/json', 'Authorization': token}
     data = {
         'title': '제목',
-        'content': '내용',
-        'writer': '작성자'
+        'content': '내용'
     }
 
     response = client.put(
         '/posts/{}/'.format(post_pk), data=json.dumps(data), headers=headers)
 
-    assert response.status_code == 401
+    assert response.status_code == 403
 
 
 @mock.patch("backend.views.posts_view.AuthToken")
 @mock.patch("backend.views.posts_view.Post")
-def test_put_is_authenticated(mock_post, mock_auth_token, client, posts):
+def test_put_is_authroized(mock_post, mock_auth_token, client, posts):
     post_pk = 'pf85469378ebc3de6b8cf154'
 
     writer = User()
     writer.pk = 'uf85469378ebc3de6b8cf154'
-    post = Post(user=writer)
+    post = Post(writer=writer)
     post.pk = post_pk
 
     token = 'dummy_token'
@@ -165,7 +164,6 @@ def test_put_is_authenticated(mock_post, mock_auth_token, client, posts):
     data = {
         'title': '제목',
         'content': '내용',
-        'writer': '작성자'
     }
 
     response = client.put(

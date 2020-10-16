@@ -66,9 +66,9 @@ class TestPostModel(TestCase):
         u = User()
         saved_u = u.save()
 
-        p = Post(user=u, title="게시글")
+        p = Post(writer=u, title="게시글")
         saved_p = p.save()
 
-        filtered = Post.objects(user=saved_u.pk).get()
+        filtered = Post.objects(writer=saved_u.pk).get()
         assert filtered is not None
         assert filtered.title == '게시글'
