@@ -3,8 +3,11 @@ from flask_classful import FlaskView, route
 from mongoengine import DoesNotExist
 from backend.schemas.user_schema import UserSchema
 from backend.models.user import User
+from backend.utils import Utils
+from backend.models.auth_token import AuthToken
 
 user_schema = UserSchema()
+user_response = UserSchema(only=['user_id', '_id'])
 
 
 class UsersView(FlaskView):
@@ -21,4 +24,8 @@ class UsersView(FlaskView):
         u = User(**data)
         u.save()
 
-        return {'result': True}, 201
+        token = Utils.generate_token()
+        a = AuthToken(token=token, user=u)
+        a.save()
+
+        return {'token': token, 'user': user_response.dump(u)}, 201

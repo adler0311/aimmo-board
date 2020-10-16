@@ -4,8 +4,8 @@ from mongoengine import DoesNotExist
 from mongoengine.queryset.visitor import Q
 from backend.schemas.user_schema import UserSchema
 from backend.models.user import User
-import secrets
 from backend.models.auth_token import AuthToken
+from backend.utils import Utils
 
 user_schema = UserSchema()
 user_response_schema = UserSchema(only=['user_id', '_id'])
@@ -28,11 +28,8 @@ class AuthView(FlaskView):
         if u is None:
             return jsonify({'message': 'user not exist'}), 404
 
-        token = self.generate_token()
+        token = Utils.generate_token()
         a = AuthToken(token=token, user=u)
         a.save()
 
         return {'token': token, 'user': user_response_schema.dump(u)}, 201
-
-    def generate_token(self):
-        return secrets.token_urlsafe()
