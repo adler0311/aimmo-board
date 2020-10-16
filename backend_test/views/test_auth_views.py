@@ -6,10 +6,14 @@ from bson import ObjectId
 from backend.models.user import User
 
 
+@mock.patch("backend.views.auth_view.AuthToken")
 @mock.patch("backend.views.auth_view.User")
-def test_auth(mock_user, client):
+def test_auth(mock_user, mock_auth_token, client):
     objects = mock_user.objects()
-    objects.first.return_value = User(user_id='test user')
+    u = User(user_id='test user')
+    u.pk = 'pk123'
+    objects.first.return_value = u
+
     headers = {'Content-Type': 'application/json'}
     data = {
         'userId': '아이디123',
@@ -20,4 +24,7 @@ def test_auth(mock_user, client):
 
     assert response.status_code == 201
     data = json.loads(response.data)
-    assert data['userId'] == 'test user'
+    assert data['user']['userId'] == 'test user'
+    assert 'password' not in data['user']
+    assert '_id' in data['user']
+    assert data['user']['_id'] == 'pk123'

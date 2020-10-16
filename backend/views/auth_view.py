@@ -8,6 +8,7 @@ import secrets
 from backend.models.auth_token import AuthToken
 
 user_schema = UserSchema()
+user_response_schema = UserSchema(only=['user_id', '_id'])
 
 
 class AuthView(FlaskView):
@@ -28,11 +29,10 @@ class AuthView(FlaskView):
             return jsonify({'message': 'user not exist'}), 404
 
         token = self.generate_token()
-        # todo. 이미 로그인했으면 갱신한다. 따라서 user_id를 같이 저장하는 게 좋다
-        a = AuthToken(token=token)
+        a = AuthToken(token=token, user=u)
         a.save()
 
-        return {'token': token, 'userId': u.user_id}, 201
+        return {'token': token, 'user': user_response_schema.dump(u)}, 201
 
     def generate_token(self):
         return secrets.token_urlsafe()

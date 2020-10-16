@@ -1,4 +1,5 @@
 from backend.schemas.user_schema import UserSchema
+from backend.models.user import User
 
 
 def test_load():
@@ -7,3 +8,29 @@ def test_load():
 
     result = schema.load(data)
     assert result is not None
+
+
+def test_init():
+    schema = UserSchema(only=['user_id'])
+
+    assert schema is not None
+
+
+def test_filtering_password():
+    user = User(user_id='user123', password='123')
+    schema = UserSchema(only=['user_id'])
+
+    r = schema.dump(user)
+    assert r is not None
+    assert 'password' not in r
+
+
+def test_dump_with_pk():
+    user = User(user_id='user123', password='123')
+    saved = user.save()
+
+    schema = UserSchema(only=['user_id'])
+    r = schema.dump(saved)
+
+    assert r is not None
+    assert '_id' in r
