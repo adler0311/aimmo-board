@@ -131,12 +131,111 @@ def test_put_post(mock_post, client, posts):
     assert response.status_code == 200
 
 
+def test_delete_post_empty_token(client):
+    dummy_post_id = '5f85469378ebc3de6b8cf154'
+
+    response = client.delete('/posts/{}/'.format(dummy_post_id))
+
+    assert response.status_code == 401
+
+
+@mock.patch("backend.views.posts_view.AuthToken")
+def test_delete_post_not_authenticated(mock_auth_token, client):
+    invalid_token = 'invalid_token'
+    dummy_post_id = '5f85469378ebc3de6b8cf154'
+
+    headers = {'Content-Type': 'application/json',
+               'Authorization': invalid_token}
+
+    mock_auth_token.objects.get.side_effect = DoesNotExist()
+
+    response = client.delete(
+        '/posts/{}/'.format(dummy_post_id), headers=headers)
+
+    assert response.status_code == 401
+
+
+@mock.patch("backend.views.posts_view.AuthToken")
 @mock.patch("backend.views.posts_view.Post")
-def test_delete_post(mock_post, client, posts):
-    p = posts[0]
-    response = client.delete('/posts/{}/'.format(p['_id']))
+def test_delete_post_not_authorized(mock_post, mock_auth_token, client, posts):
+    post_pk = 'pf85469378ebc3de6b8cf154'
+
+    writer = User()
+    writer.pk = 'uf85469378ebc3de6b8cf154'
+    post = Post(writer=writer)
+    post.pk = post_pk
+
+    valid_token = 'valid_token'
+
+    not_writer = User()
+    not_writer.pk = 'uf85469378ebc3de6b8cf152'
+    mock_auth_token.objects.get.return_value = AuthToken(
+        token=valid_token, user=not_writer)
+
+    objects = mock_post.objects
+    objects.get.return_value = post
+
+    headers = {'Content-Type': 'application/json',
+               'Authorization': valid_token}
+    data = {
+        'title': '제목',
+        'content': '내용'
+    }
+
+    response = client.delete(
+        '/posts/{}/'.format(post_pk), data=json.dumps(data), headers=headers)
+
+    assert response.status_code == 403
+
+
+@mock.patch("backend.views.posts_view.AuthToken")
+@mock.patch("backend.views.posts_view.Post")
+def test_delete_post_is_authorized(mock_post, mock_auth_token, client, posts):
+    post_pk = 'pf85469378ebc3de6b8cf154'
+
+    writer = User()
+    writer.pk = 'uf85469378ebc3de6b8cf154'
+    post = Post(writer=writer)
+    post.pk = post_pk
+
+    token = 'dummy_token'
+
+    mock_auth_token.objects.get.return_value = AuthToken(
+        token=token, user=writer)
+    mock_post.objects.get.return_value = post
+
+    headers = {'Content-Type': 'application/json', 'Authorization': token}
+
+    response = client.delete(
+        '/posts/{}/'.format(post_pk),  headers=headers)
 
     assert response.status_code == 200
+
+
+@mock.patch("backend.views.posts_view.Post")
+def test_add_post_not_authenticated(mock_auth_token, mock_post, client):
+    invalid_token = 'dummy_token'
+
+    mock_auth_token.objects.get.side_effect = DoesNotExist()
+
+    headers = {'Content-Type': 'application/json',
+               'Authorization': invalid_token}
+    data = {
+        'title': '제목',
+        'content': '내용',
+    }
+
+    response = client.post('/posts/', data=json.dumps(data), headers=headers)
+
+    assert response.status_code == 401
+
+
+# @mock.patch("backend.views.posts_view.Post")
+# def test_delete_post(mock_post, client, posts):
+#     p = posts[0]
+#     response = client.delete('/posts/{}/'.format(p['_id']))
+
+#     assert response.status_code == 200
 
 
 @mock.patch("backend.views.posts_view.Post")

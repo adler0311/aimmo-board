@@ -87,6 +87,19 @@ class PostsView(FlaskView):
         return {'result': True}, 200
 
     def delete(self, id):
+        token = request.headers.get('Authorization')
+        if token is None:
+            return jsonify({'message': 'token required'}), 401
+
+        try:
+            auth_token = AuthToken.objects.get(token=token)
+        except DoesNotExist as e:
+            return jsonify({'message': 'not authenticated'}), 401
+
+        post = Post.objects.get(pk=id)
+        if post.writer.id != auth_token.user.id:
+            return jsonify({'message': 'not authorized'}), 403
+
         result = Post.objects(pk=id).delete()
 
         if not result:
