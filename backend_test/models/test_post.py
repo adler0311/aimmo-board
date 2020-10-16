@@ -1,4 +1,5 @@
 from backend.models.post import Post
+from backend.models.user import User
 from mongoengine import connect, disconnect
 from bson import ObjectId
 from unittest import TestCase
@@ -60,3 +61,14 @@ class TestPostModel(TestCase):
         result = Post.objects(pk=id).delete()
 
         assert len(Post.objects) == 0
+
+    def test_filter_post_user(self):
+        u = User()
+        saved_u = u.save()
+
+        p = Post(user=u, title="게시글")
+        saved_p = p.save()
+
+        filtered = Post.objects(user=saved_u.pk).get()
+        assert filtered is not None
+        assert filtered.title == '게시글'

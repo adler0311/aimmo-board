@@ -1,6 +1,7 @@
 from flask import request, jsonify
 from flask_classful import FlaskView
 from backend.models.post import Post
+from backend.models.auth_token import AuthToken
 from backend.schemas.post_schema import PostSchema
 from mongoengine import DoesNotExist
 
@@ -45,6 +46,8 @@ class PostsView(FlaskView):
             return jsonify({'message': 'Post matching query does not exist'}), 404
 
     def put(self, id):
+        token = request.headers.get('Authorization')
+
         json_data = request.get_json()
         if not json_data:
             return jsonify({'message': 'No input data provided'}), 400
@@ -53,6 +56,12 @@ class PostsView(FlaskView):
             data = post_schema.load(json_data)
         except ValueError as err:
             return jsonify(err.messages), 422
+
+        auth_token = AuthToken.objects.get(token=token)
+        post = Post.objects.get(pk=id)
+
+        if post.user.id != auth_token.user.id:
+            return jsonify({'message': 'authentication required'}), 401
 
         result = Post.objects(pk=id).update_one(
             title=data['title'], content=data['content'])

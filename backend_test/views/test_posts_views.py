@@ -5,6 +5,8 @@ from pytest_flask.plugin import JSONResponse
 from bson import ObjectId
 from mongoengine import DoesNotExist
 from backend.models.post import Post
+from backend.models.auth_token import AuthToken
+from backend.models.user import User
 from backend.schemas.post_schema import PostSchema
 
 
@@ -106,3 +108,67 @@ def test_delete_which_not_exist(mock_post, client, posts):
     response = client.delete('/posts/{}/'.format(p['_id']))
 
     assert response.status_code == 404
+
+
+@mock.patch("backend.views.posts_view.AuthToken")
+@mock.patch("backend.views.posts_view.Post")
+def test_put_not_authenticated(mock_post, mock_auth_token, client, posts):
+    post_pk = 'pf85469378ebc3de6b8cf154'
+
+    writer = User()
+    writer.pk = 'uf85469378ebc3de6b8cf154'
+    post = Post(user=writer)
+    post.pk = post_pk
+
+    token = 'dummy_token'
+
+    not_writer = User()
+    not_writer.pk = 'uf85469378ebc3de6b8cf152'
+    mock_auth_token.objects.get.return_value = AuthToken(
+        token=token, user=not_writer)
+
+    objects = mock_post.objects
+    objects.get.return_value = post
+
+    headers = {'Content-Type': 'application/json', 'Authorization': token}
+    data = {
+        'title': '제목',
+        'content': '내용',
+        'writer': '작성자'
+    }
+
+    response = client.put(
+        '/posts/{}/'.format(post_pk), data=json.dumps(data), headers=headers)
+
+    assert response.status_code == 401
+
+
+@mock.patch("backend.views.posts_view.AuthToken")
+@mock.patch("backend.views.posts_view.Post")
+def test_put_is_authenticated(mock_post, mock_auth_token, client, posts):
+    post_pk = 'pf85469378ebc3de6b8cf154'
+
+    writer = User()
+    writer.pk = 'uf85469378ebc3de6b8cf154'
+    post = Post(user=writer)
+    post.pk = post_pk
+
+    token = 'dummy_token'
+
+    mock_auth_token.objects.get.return_value = AuthToken(
+        token=token, user=writer)
+
+    objects = mock_post.objects
+    objects.get.return_value = post
+
+    headers = {'Content-Type': 'application/json', 'Authorization': token}
+    data = {
+        'title': '제목',
+        'content': '내용',
+        'writer': '작성자'
+    }
+
+    response = client.put(
+        '/posts/{}/'.format(post_pk), data=json.dumps(data), headers=headers)
+
+    assert response.status_code == 200

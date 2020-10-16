@@ -1,5 +1,6 @@
 from mongoengine import *
 from backend.models.comment import Comment
+from backend.models.user import User
 
 
 class Post(Document):
@@ -7,3 +8,4 @@ class Post(Document):
     content = StringField()
     writer = StringField()
     comments = ListField(ReferenceField(Comment))
+    user = ReferenceField(User)
