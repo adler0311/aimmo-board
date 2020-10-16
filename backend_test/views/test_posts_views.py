@@ -37,17 +37,57 @@ def test_get_posts(mock_post, client, posts):
 
 
 @mock.patch("backend.views.posts_view.Post")
-def test_add_post(mock_post, client):
-    headers = {'Content-Type': 'application/json'}
+@mock.patch("backend.views.posts_view.AuthToken")
+def test_add_post_is_authenticated(mock_auth_token, mock_post, client):
+    writer = User()
+    writer.pk = 'uf85469378ebc3de6b8cf154'
+
+    token = 'dummy_token'
+
+    mock_auth_token.objects.get.return_value = AuthToken(
+        token=token, user=writer)
+
+    headers = {'Content-Type': 'application/json', 'Authorization': token}
     data = {
         'title': '제목',
         'content': '내용',
-        'writer': '작성자'
     }
 
     response = client.post('/posts/', data=json.dumps(data), headers=headers)
 
     assert response.status_code == 201
+
+
+def test_add_post_empty_token(client):
+    headers = {'Content-Type': 'application/json'}
+
+    data = {
+        'title': '제목',
+        'content': '내용',
+    }
+
+    response = client.post('/posts/', data=json.dumps(data), headers=headers)
+
+    assert response.status_code == 401
+
+
+@mock.patch("backend.views.posts_view.Post")
+@mock.patch("backend.views.posts_view.AuthToken")
+def test_add_post_not_authenticated(mock_auth_token, mock_post, client):
+    invalid_token = 'dummy_token'
+
+    mock_auth_token.objects.get.side_effect = DoesNotExist()
+
+    headers = {'Content-Type': 'application/json',
+               'Authorization': invalid_token}
+    data = {
+        'title': '제목',
+        'content': '내용',
+    }
+
+    response = client.post('/posts/', data=json.dumps(data), headers=headers)
+
+    assert response.status_code == 401
 
 
 @mock.patch("backend.views.posts_view.Post")

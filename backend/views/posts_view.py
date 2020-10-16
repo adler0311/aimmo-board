@@ -23,6 +23,15 @@ class PostsView(FlaskView):
             return 'Internal Server Error', 500
 
     def post(self):
+        token = request.headers.get('Authorization')
+        if token is None:
+            return jsonify({'message': 'token required'}), 401
+
+        try:
+            auth_token = AuthToken.objects.get(token=token)
+        except DoesNotExist as e:
+            return jsonify({'message': 'not authenticated'}), 401
+
         json_data = request.get_json()
         if not json_data:
             return jsonify({'message': 'No input data provided'}), 400
