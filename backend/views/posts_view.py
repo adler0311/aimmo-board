@@ -6,7 +6,7 @@ from backend.models.auth_token import AuthToken
 from backend.schemas.post_schema import PostSchema
 from mongoengine import DoesNotExist, QuerySet
 from backend.views.decorators import token_required, input_data_required
-
+from marshmallow import ValidationError
 import logging
 
 posts_schema = PostSchema(many=True)
@@ -55,8 +55,8 @@ class PostsView(FlaskView):
 
         try:
             data = post_schema.load(json_data)
-        except ValueError as err:
-            return jsonify(err.messages), 422
+        except ValidationError as err:
+            return jsonify(err.messages), 400
 
         data['writer'] = auth_token.user
         p = Post(**data)
@@ -72,8 +72,8 @@ class PostsView(FlaskView):
 
         try:
             data = post_schema.load(json_data)
-        except ValueError as err:
-            return jsonify(err.messages), 422
+        except ValidationError as err:
+            return jsonify(err.messages), 400
 
         result = Post.objects(pk=id).update_one(
             title=data['title'], content=data['content'])

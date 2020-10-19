@@ -7,6 +7,7 @@ from mongoengine import DoesNotExist
 from bson import ObjectId
 from backend.views.decorators import token_required
 from functools import wraps
+from marshmallow import ValidationError
 
 import logging
 
@@ -55,7 +56,7 @@ class CommentsView(FlaskView):
 
         try:
             data = comment_schema.load(json_data)
-        except ValueError as err:
+        except ValidationError as err:
             return jsonify(err.messages), 400
 
         try:
@@ -88,7 +89,7 @@ class CommentsView(FlaskView):
 
         try:
             data = comment_schema.load(json_data)
-        except ValueError as err:
+        except ValidationError as err:
             return jsonify(err.messages), 400
 
         result = Comment.objects(pk=comment_id).update_one(

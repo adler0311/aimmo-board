@@ -6,6 +6,7 @@ from backend.schemas.user_schema import UserSchema
 from backend.models.user import User
 from backend.models.auth_token import AuthToken
 from backend.utils import Utils
+from marshmallow import ValidationError
 
 user_schema = UserSchema()
 user_response_schema = UserSchema(only=['user_id', '_id'])
@@ -19,7 +20,7 @@ class AuthView(FlaskView):
 
         try:
             data = user_schema.load(json_data)
-        except ValueError as err:
+        except ValidationError as err:
             return jsonify(err.messages), 400
 
         u = User.objects(Q(user_id=data['user_id']) &

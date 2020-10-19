@@ -214,21 +214,21 @@ def test_add_post_not_authenticated(mock_auth_token, mock_post, client):
     assert response.status_code == 401
 
 
-# @mock.patch("backend.views.decorators.AuthToken")
-# def test_add_post_redundant_JSON_field(mock_auth_token, client):
-#     valid_token = 'valid_token'
+@mock.patch("backend.views.decorators.AuthToken")
+def test_add_post_redundant_JSON_field(mock_auth_token, client):
+    valid_token = 'valid_token'
 
-#     headers = {'Content-Type': 'application/json',
-#                'Authorization': valid_token}
-#     data = {
-#         'title': '제목',
-#         'content': '내용',
-#         'redundant': '댓글 입니다'
-#     }
+    headers = {'Content-Type': 'application/json',
+               'Authorization': valid_token}
+    data = {
+        'title': '제목',
+        'content': '내용',
+        'redundant': '댓글 입니다'
+    }
 
-#     response = client.post('/posts/', data=json.dumps(data), headers=headers)
+    response = client.post('/posts/', data=json.dumps(data), headers=headers)
 
-#     assert response.status_code == 400
+    assert response.status_code == 400
 
 
 @mock.patch("backend.views.decorators.AuthToken")
