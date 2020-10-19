@@ -6,11 +6,29 @@ from backend.schemas.comment_schema import CommentSchema
 from mongoengine import DoesNotExist
 from bson import ObjectId
 from backend.views.decorators import token_required
+from functools import wraps
 
 import logging
 
 comments_schema = CommentSchema(many=True)
 comment_schema = CommentSchema()
+
+
+def authorization_required(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        comment_id = kwargs['comment_id']
+        auth_token = kwargs['auth_token']
+
+        qs: QuerySet = Comment.objects
+        comment = qs.get(pk=comment_id)
+
+        if comment.writer.id != auth_token.user.id:
+            return jsonify({'message': 'not authorized'}), 403
+
+        return func(*args, **kwargs)
+
+    return wrapper
 
 
 class CommentsView(FlaskView):
@@ -60,8 +78,10 @@ class CommentsView(FlaskView):
     #     except DoesNotExist as e:
     #         return jsonify({'message': 'Post matching query does not exist'}), 404
 
+    @token_required
+    @authorization_required
     @route('/<string:post_id>/comments/<string:comment_id>', methods=['PUT'])
-    def put_comment(self, post_id, comment_id):
+    def put_comment(self, post_id, comment_id, **kwargs):
         json_data = request.get_json()
         if not json_data:
             return jsonify({'message': 'No input data provided'}), 400
@@ -71,22 +91,27 @@ class CommentsView(FlaskView):
         except ValueError as err:
             return jsonify(err.messages), 400
 
-        result = Comment.objects(pk=comment_id).update_one(content=data['content'],
-                                                           writer=data['writer'])
+        result = Comment.objects(pk=comment_id).update_one(
+            content=data['content'])
+
         if result == 0:
             return jsonify({'message': 'Comment matching id does not exist'}), 404
 
         return {'result': True}, 200
 
+    @token_required
+    @authorization_required
     @route('/<string:post_id>/comments/<string:comment_id>/', methods=['DELETE'])
-    def delete(self, post_id, comment_id):
+    def delete(self, post_id, comment_id, **kwargs):
         result = Comment.objects(pk=comment_id).delete()
-
-        p = Post.objects.get(pk=post_id)
-        result2 = Post.objects(pk=p.id).update_one(comments=list(
-            filter(lambda c: c.id != ObjectId(comment_id), p.comments)))
-
         if not result:
             return jsonify({'message': 'Comment matching id does not exist'}), 404
+
+        try:
+            p = Post.objects.get(pk=post_id)
+            Post.objects(pk=p.id).update_one(comments=list(
+                filter(lambda c: c.id != ObjectId(comment_id), p.comments)))
+        except:
+            return jsonify({'message': 'Post matching id does not exist'}), 404
 
         return {'result': True}, 200

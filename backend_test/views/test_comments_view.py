@@ -6,6 +6,7 @@ from bson import ObjectId
 from mongoengine import DoesNotExist
 from typing import List
 from backend.models.user import User
+from backend.models.auth_token import AuthToken
 
 
 from backend.models.post import Post
@@ -117,18 +118,69 @@ def test_add_comment_is_authenticated(mock_comment, mock_post, mock_comment_sche
     assert response.status_code == 201
 
 
-@mock.patch("backend.views.comments_view.Comment")
-def test_put_comment(mock_comment, client, comments: List[Comment]):
-    mock_comment.objects.update_one.return_value = 1
+@mock.patch("backend.views.decorators.AuthToken")
+def test_put_comment_not_authenticated(mock_auth_token, client, comments: List[Comment]):
     dummy_post_id = '5f85469378ebc3de6b8cf156'
-
+    invalid_token = 'invalid_token'
     c = comments[0]
 
-    headers = {'Content-Type': 'application/json'}
-    data = {
-        'content': '내용',
-        'writer': '작성자',
-    }
+    mock_auth_token.objects.get.side_effect = DoesNotExist()
+
+    headers = {'Content-Type': 'application/json',
+               'Authorization': invalid_token}
+
+    data = {'content': '내용'}
+
+    response = client.put(
+        '/posts/{post_id}/comments/{comment_id}'.format(
+            post_id=dummy_post_id, comment_id=c.pk),
+        data=json.dumps(data), headers=headers)
+
+    assert response.status_code == 401
+
+
+@mock.patch("backend.views.decorators.AuthToken")
+@mock.patch("backend.views.comments_view.Comment")
+def test_put_comment_not_authorized(mock_comment, mock_auth_token, client, comments):
+    dummy_post_id = '5f85469378ebc3de6b8cf156'
+    c = comments[0]
+
+    not_writer = User()
+    not_writer.pk = 'nw85469378ebc3de6b8cf156'
+    not_writer_token = 'not_writer_token'
+    mock_auth_token.objects.get.return_value = AuthToken(user=not_writer)
+
+    mock_comment.objects.get.return_value = c
+
+    headers = {'Content-Type': 'application/json',
+               'Authorization': not_writer_token}
+
+    data = {'content': '업데이트할 댓글'}
+
+    response = client.put(
+        '/posts/{post_id}/comments/{comment_id}'.format(
+            post_id=dummy_post_id, comment_id=c.pk),
+        data=json.dumps(data), headers=headers)
+
+    assert response.status_code == 403
+
+
+@mock.patch("backend.views.decorators.AuthToken")
+@mock.patch("backend.views.comments_view.Comment")
+def test_put_comment_is_success(mock_comment, mock_auth_token, client, comments):
+    dummy_post_id = '5f85469378ebc3de6b8cf156'
+    c = comments[0]
+
+    writer = c.writer
+    writer_token = 'writer_token'
+    mock_auth_token.objects.get.return_value = AuthToken(user=writer)
+
+    mock_comment.objects.get.return_value = c
+
+    headers = {'Content-Type': 'application/json',
+               'Authorization': writer_token}
+
+    data = {'content': '업데이트할 댓글'}
 
     response = client.put(
         '/posts/{post_id}/comments/{comment_id}'.format(
@@ -138,12 +190,62 @@ def test_put_comment(mock_comment, client, comments: List[Comment]):
     assert response.status_code == 200
 
 
+@mock.patch("backend.views.decorators.AuthToken")
+def test_delete_comment_not_authenticated(mock_auth_token, client, comments: List[Comment]):
+    dummy_post_id = '5f85469378ebc3de6b8cf156'
+    invalid_token = 'invalid_token'
+    c = comments[0]
+
+    mock_auth_token.objects.get.side_effect = DoesNotExist()
+
+    headers = {'Content-Type': 'application/json',
+               'Authorization': invalid_token}
+
+    response = client.delete(
+        '/posts/{post_id}/comments/{comment_id}/'.format(post_id=dummy_post_id, comment_id=c.pk), headers=headers)
+
+    assert response.status_code == 401
+
+
+@mock.patch("backend.views.decorators.AuthToken")
 @mock.patch("backend.views.comments_view.Comment")
-@mock.patch("backend.views.comments_view.Post")
-def test_delete_comment(mock_post, mock_comment, client, comments: List[Comment]):
+def test_delete_comment_not_authorized(mock_comment, mock_auth_token, client, comments):
     dummy_post_id = '5f85469378ebc3de6b8cf156'
     c = comments[0]
+
+    not_writer = User()
+    not_writer.pk = 'nw85469378ebc3de6b8cf156'
+    not_writer_token = 'not_writer_token'
+    mock_auth_token.objects.get.return_value = AuthToken(user=not_writer)
+
+    mock_comment.objects.get.return_value = c
+
+    headers = {'Content-Type': 'application/json',
+               'Authorization': not_writer_token}
+
     response = client.delete(
-        '/posts/{post_id}/comments/{comment_id}'.format(post_id=dummy_post_id, comment_id=c.pk))
+        '/posts/{post_id}/comments/{comment_id}/'.format(post_id=dummy_post_id, comment_id=c.pk), headers=headers)
+
+    assert response.status_code == 403
+
+
+@mock.patch("backend.views.decorators.AuthToken")
+@mock.patch("backend.views.comments_view.Comment")
+@mock.patch("backend.views.comments_view.Post")
+def test_delete_comment_is_success(mock_post, mock_comment, mock_auth_token, client, comments):
+    dummy_post_id = '5f85469378ebc3de6b8cf156'
+    c = comments[0]
+
+    writer = c.writer
+    writer_token = 'writer_token'
+    mock_auth_token.objects.get.return_value = AuthToken(user=writer)
+
+    mock_comment.objects.get.return_value = c
+
+    headers = {'Content-Type': 'application/json',
+               'Authorization': writer_token}
+
+    response = client.delete(
+        '/posts/{post_id}/comments/{comment_id}/'.format(post_id=dummy_post_id, comment_id=c.pk), headers=headers)
 
     assert response.status_code == 200
