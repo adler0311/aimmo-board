@@ -1,9 +1,11 @@
 from flask import request, jsonify
 from backend.models.auth_token import AuthToken
 from mongoengine import DoesNotExist
+from functools import wraps
 
 
 def token_required(func):
+    @wraps(func)
     def wrapper(*args, **kwargs):
         token = request.headers.get('Authorization')
         if token is None:
