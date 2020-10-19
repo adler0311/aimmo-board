@@ -12,11 +12,11 @@ from backend.schemas.post_schema import PostSchema
 
 @pytest.fixture
 def posts():
-    p1 = Post(title='title1', content='content1', writer='writer1')
+    p1 = Post(title='title1', content='content1')
     p1.pk = '5f85469378ebc3de6b8cf154'
-    p2 = Post(title='title2', content='content2', writer='writer2')
+    p2 = Post(title='title2', content='content2')
     p2.pk = '5f85469378ebc3de6b8cf154'
-    p3 = Post(title='title3', content='content3', writer='writer3')
+    p3 = Post(title='title3', content='content3')
     p3.pk = '5f85469378ebc3de6b8cf154'
 
     return [p1, p2, p3]
@@ -114,23 +114,6 @@ def test_get_post_which_not_exist_id(mock_post, client, posts):
     assert http_response.status_code == 404
 
 
-@mock.patch("backend.views.posts_view.Post")
-def test_put_post(mock_post, client, posts):
-    p = posts[0]
-
-    headers = {'Content-Type': 'application/json'}
-    data = {
-        'title': '제목',
-        'content': '내용',
-        'writer': '작성자'
-    }
-
-    response = client.put(
-        '/posts/{}/'.format(p['_id']), data=json.dumps(data), headers=headers)
-
-    assert response.status_code == 200
-
-
 def test_delete_post_empty_token(client):
     dummy_post_id = '5f85469378ebc3de6b8cf154'
 
@@ -213,6 +196,7 @@ def test_delete_post_is_authorized(mock_post, mock_auth_token, client, posts):
 
 
 @mock.patch("backend.views.posts_view.Post")
+@mock.patch("backend.views.posts_view.AuthToken")
 def test_add_post_not_authenticated(mock_auth_token, mock_post, client):
     invalid_token = 'dummy_token'
 
@@ -236,17 +220,6 @@ def test_add_post_not_authenticated(mock_auth_token, mock_post, client):
 #     response = client.delete('/posts/{}/'.format(p['_id']))
 
 #     assert response.status_code == 200
-
-
-@mock.patch("backend.views.posts_view.Post")
-def test_delete_which_not_exist(mock_post, client, posts):
-    objects = mock_post.objects()
-    objects.delete.return_value = 0
-
-    p = posts[0]
-    response = client.delete('/posts/{}/'.format(p['_id']))
-
-    assert response.status_code == 404
 
 
 @mock.patch("backend.views.posts_view.AuthToken")
