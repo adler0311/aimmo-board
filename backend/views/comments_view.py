@@ -5,6 +5,7 @@ from backend.models.post import Post
 from backend.schemas.comment_schema import CommentSchema
 from mongoengine import DoesNotExist
 from bson import ObjectId
+from backend.views.decorators import token_required
 
 import logging
 
@@ -26,8 +27,10 @@ class CommentsView(FlaskView):
             logging.debug(e)
             return 'Internal Server Error', 500
 
-    @route('/<string:post_id>/comments/', methods=['POST'])
-    def post_comment(self, post_id):
+    @token_required
+    @route('/<post_id>/comments/', methods=['POST'])
+    def post_comment(self, post_id, **kwargs):
+        auth_token = kwargs['auth_token']
         json_data = request.get_json()
         if not json_data:
             return jsonify({'message': 'No input data provided'}), 400
@@ -37,11 +40,15 @@ class CommentsView(FlaskView):
         except ValueError as err:
             return jsonify(err.messages), 400
 
-        c = Comment(**data, post_id=post_id)
-        c.save()
+        try:
+            p = Post.objects.get(id=post_id)
 
-        p = Post.objects.get(id=post_id)
-        Post.objects(pk=p.id).update_one(comments=[c] + p.comments)
+            c = Comment(**data, post_id=post_id)
+            c.save()
+
+            Post.objects(pk=p.id).update_one(comments=[c] + p.comments)
+        except:
+            return jsonify({'message': 'Comment matching id does not exist'}), 404
 
         return {'result': True}, 201
 
