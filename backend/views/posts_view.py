@@ -69,7 +69,7 @@ class PostsView(FlaskView):
     @input_data_required
     def put(self, id, **kwargs):
         auth_token, json_data = kwargs['auth_token'], kwargs['json_data']
-        
+
         try:
             data = post_schema.load(json_data)
         except ValueError as err:
