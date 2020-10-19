@@ -16,3 +16,11 @@ def test_add_user(mock_user, client):
     response = client.post('/users/', data=json.dumps(data), headers=headers)
 
     assert response.status_code == 201
+
+
+def test_add_user_empty_data(client):
+    headers = {'Content-Type': 'application/json'}
+
+    response = client.post('/users/',  headers=headers)
+
+    assert response.status_code == 400

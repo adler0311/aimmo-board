@@ -6,16 +6,16 @@ from backend.models.user import User
 from backend.utils import Utils
 from backend.models.auth_token import AuthToken
 from marshmallow import ValidationError
+from backend.views.decorators import input_data_required
 
 user_schema = UserSchema()
 user_response = UserSchema(only=['user_id', '_id'])
 
 
 class UsersView(FlaskView):
-    def post(self):
-        json_data = request.get_json()
-        if not json_data:
-            return jsonify({'message': 'No input data provided'}), 400
+    @input_data_required
+    def post(self, **kwargs):
+        json_data = kwargs['json_data']
 
         try:
             data = user_schema.load(json_data)
