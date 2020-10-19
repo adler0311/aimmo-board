@@ -2,6 +2,7 @@ from bson import ObjectId
 from unittest import TestCase
 from mongoengine import connect, disconnect, Document, StringField
 
+from backend.models.user import User
 from backend.models.post import Post
 from backend.models.comment import Comment
 
@@ -10,12 +11,11 @@ import pytest
 
 @pytest.fixture(scope='class')
 def comments(request):
-    comments = []
-    c = {'content': '댓글입니다', 'writer': '작성자',
-         'post_id': ObjectId('5f85469378ebc3de6b8cf154')}
-    comments.append(c)
-
-    request.cls.comments = comments
+    u = User()
+    saved = u.save()
+    c = {'content': '댓글입니다', 'post_id': ObjectId(
+        '5f85469378ebc3de6b8cf154'), 'writer': u}
+    request.cls.comments = [c]
 
 
 @pytest.mark.usefixtures("comments")
@@ -61,3 +61,11 @@ class TestCommentModel(TestCase):
         assert result == 1
         comments = Comment.objects(id=c.pk)
         assert len(comments) == 0
+
+    def test_writer_type_is_user(self):
+        c = self.comments[0]
+        comment = Comment(**c)
+        result = comment.save()
+
+        assert result.writer is not None
+        assert type(result.writer) is User

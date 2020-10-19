@@ -1,5 +1,4 @@
 from mongoengine import *
-from backend.models.comment import Comment
 
 
 class User(Document):
