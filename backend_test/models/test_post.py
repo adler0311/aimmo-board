@@ -4,6 +4,7 @@ from mongoengine import connect, disconnect
 from bson import ObjectId
 from unittest import TestCase
 from mongoengine import Document, StringField
+import datetime
 
 
 class TestPostModel(TestCase):
@@ -72,3 +73,13 @@ class TestPostModel(TestCase):
         filtered = Post.objects(writer=saved_u.pk).get()
         assert filtered is not None
         assert filtered.title == '게시글'
+
+    def test_datetime_field_exist(self):
+        p = Post(title="게시글")
+        p.save()
+
+        now = datetime.datetime.now()
+        diff_in_minute = abs((p.created - now).total_seconds() / 60)
+
+        assert p.created is not None
+        assert diff_in_minute < 1
