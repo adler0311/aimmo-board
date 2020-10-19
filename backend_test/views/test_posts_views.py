@@ -37,7 +37,7 @@ def test_get_posts(mock_post, client, posts):
 
 
 @mock.patch("backend.views.posts_view.Post")
-@mock.patch("backend.views.posts_view.AuthToken")
+@mock.patch("backend.views.decorators.AuthToken")
 def test_add_post_is_authenticated(mock_auth_token, mock_post, client):
     writer = User()
     writer.pk = 'uf85469378ebc3de6b8cf154'
@@ -72,7 +72,7 @@ def test_add_post_empty_token(client):
 
 
 @mock.patch("backend.views.posts_view.Post")
-@mock.patch("backend.views.posts_view.AuthToken")
+@mock.patch("backend.views.decorators.AuthToken")
 def test_add_post_not_authenticated(mock_auth_token, mock_post, client):
     invalid_token = 'dummy_token'
 
@@ -122,7 +122,7 @@ def test_delete_post_empty_token(client):
     assert response.status_code == 401
 
 
-@mock.patch("backend.views.posts_view.AuthToken")
+@mock.patch("backend.views.decorators.AuthToken")
 def test_delete_post_not_authenticated(mock_auth_token, client):
     invalid_token = 'invalid_token'
     dummy_post_id = '5f85469378ebc3de6b8cf154'
@@ -138,7 +138,7 @@ def test_delete_post_not_authenticated(mock_auth_token, client):
     assert response.status_code == 401
 
 
-@mock.patch("backend.views.posts_view.AuthToken")
+@mock.patch("backend.views.decorators.AuthToken")
 @mock.patch("backend.views.posts_view.Post")
 def test_delete_post_not_authorized(mock_post, mock_auth_token, client, posts):
     post_pk = 'pf85469378ebc3de6b8cf154'
@@ -171,7 +171,7 @@ def test_delete_post_not_authorized(mock_post, mock_auth_token, client, posts):
     assert response.status_code == 403
 
 
-@mock.patch("backend.views.posts_view.AuthToken")
+@mock.patch("backend.views.decorators.AuthToken")
 @mock.patch("backend.views.posts_view.Post")
 def test_delete_post_is_authorized(mock_post, mock_auth_token, client, posts):
     post_pk = 'pf85469378ebc3de6b8cf154'
@@ -196,7 +196,7 @@ def test_delete_post_is_authorized(mock_post, mock_auth_token, client, posts):
 
 
 @mock.patch("backend.views.posts_view.Post")
-@mock.patch("backend.views.posts_view.AuthToken")
+@mock.patch("backend.views.decorators.AuthToken")
 def test_add_post_not_authenticated(mock_auth_token, mock_post, client):
     invalid_token = 'dummy_token'
 
@@ -222,7 +222,7 @@ def test_add_post_not_authenticated(mock_auth_token, mock_post, client):
 #     assert response.status_code == 200
 
 
-@mock.patch("backend.views.posts_view.AuthToken")
+@mock.patch("backend.views.decorators.AuthToken")
 @mock.patch("backend.views.posts_view.Post")
 def test_put_not_authorized(mock_post, mock_auth_token, client, posts):
     post_pk = 'pf85469378ebc3de6b8cf154'
@@ -254,7 +254,7 @@ def test_put_not_authorized(mock_post, mock_auth_token, client, posts):
     assert response.status_code == 403
 
 
-@mock.patch("backend.views.posts_view.AuthToken")
+@mock.patch("backend.views.decorators.AuthToken")
 @mock.patch("backend.views.posts_view.Post")
 def test_put_is_authroized(mock_post, mock_auth_token, client, posts):
     post_pk = 'pf85469378ebc3de6b8cf154'
