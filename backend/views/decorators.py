@@ -19,3 +19,15 @@ def token_required(func):
         return func(*args, **kwargs)
 
     return wrapper
+
+
+def input_data_required(func):
+    def wrapper(*args, **kwargs):
+        json_data = request.get_json()
+        if not json_data:
+            return jsonify({'message': 'No input data provided'}), 400
+
+        kwargs['json_data'] = json_data
+        return func(*args, **kwargs)
+
+    return wrapper

@@ -4,13 +4,29 @@ from backend.models.post import Post
 from backend.models.user import User
 from backend.models.auth_token import AuthToken
 from backend.schemas.post_schema import PostSchema
-from mongoengine import DoesNotExist
-from backend.views.decorators import token_required
+from mongoengine import DoesNotExist, QuerySet
+from backend.views.decorators import token_required, input_data_required
 
 import logging
 
 posts_schema = PostSchema(many=True)
 post_schema = PostSchema()
+
+
+def authorization_required(func):
+    def wrapper(*args, **kwargs):
+        id = kwargs['id']
+        auth_token = kwargs['auth_token']
+
+        qs: QuerySet = Post.objects
+        post = qs.get(pk=id)
+
+        if post.writer.id != auth_token.user.id:
+            return jsonify({'message': 'not authorized'}), 403
+
+        return func(*args, **kwargs)
+
+    return wrapper
 
 
 class PostsView(FlaskView):
@@ -33,11 +49,9 @@ class PostsView(FlaskView):
             return jsonify({'message': 'Post matching query does not exist'}), 404
 
     @token_required
+    @input_data_required
     def post(self, **kwargs):
-        auth_token = kwargs['auth_token']
-        json_data = request.get_json()
-        if not json_data:
-            return jsonify({'message': 'No input data provided'}), 400
+        auth_token, json_data = kwargs['auth_token'], kwargs['json_data']
 
         try:
             data = post_schema.load(json_data)
@@ -51,22 +65,15 @@ class PostsView(FlaskView):
         return {'result': True}, 201
 
     @token_required
+    @authorization_required
+    @input_data_required
     def put(self, id, **kwargs):
-        auth_token = kwargs['auth_token']
-
-        json_data = request.get_json()
-        if not json_data:
-            return jsonify({'message': 'No input data provided'}), 400
-
+        auth_token, json_data = kwargs['auth_token'], kwargs['json_data']
+        
         try:
             data = post_schema.load(json_data)
         except ValueError as err:
             return jsonify(err.messages), 422
-
-        post = Post.objects.get(pk=id)
-
-        if post.writer.id != auth_token.user.id:
-            return jsonify({'message': 'not authorized'}), 403
 
         result = Post.objects(pk=id).update_one(
             title=data['title'], content=data['content'])
@@ -77,13 +84,8 @@ class PostsView(FlaskView):
         return {'result': True}, 200
 
     @token_required
+    @authorization_required
     def delete(self, id, **kwargs):
-        auth_token = kwargs['auth_token']
-
-        post = Post.objects.get(pk=id)
-        if post.writer.id != auth_token.user.id:
-            return jsonify({'message': 'not authorized'}), 403
-
         result = Post.objects(pk=id).delete()
 
         if not result:
