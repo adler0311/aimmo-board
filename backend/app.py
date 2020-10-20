@@ -10,6 +10,7 @@ from backend.views.posts_view import PostsView
 from backend.views.comments_view import CommentsView
 from backend.views.users_view import UsersView
 from backend.views.auth_view import AuthView
+from backend.views.boards_view import BoardsView
 import logging
 
 
@@ -59,5 +60,6 @@ def create_app():
     CommentsView.register(app)
     UsersView.register(app)
     AuthView.register(app)
+    BoardsView.register(app)
 
     return app

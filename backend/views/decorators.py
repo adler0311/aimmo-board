@@ -2,6 +2,7 @@ from flask import request, jsonify
 from backend.models.auth_token import AuthToken
 from mongoengine import DoesNotExist
 from functools import wraps
+import logging
 
 
 def token_required(func):
@@ -31,5 +32,16 @@ def input_data_required(func):
 
         kwargs['json_data'] = json_data
         return func(*args, **kwargs)
+
+    return wrapper
+
+
+def handle_internal_server_error(func):
+    def wrapper(*args, **kwargs):
+        try:
+            return func(*args, **kwargs)
+        except Exception as e:
+            logging.debug(e)
+            return jsonify({'message': 'Internal Server Error'}), 500
 
     return wrapper
