@@ -3,7 +3,7 @@ from flask_classful import FlaskView
 from backend.schemas.user_schema import UserSchema
 from marshmallow import ValidationError
 from backend.views.decorators import input_data_required
-from backend.services.user_sevice import UserService
+from backend.services.user_service import UserService
 
 
 user_schema = UserSchema()

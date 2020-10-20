@@ -7,8 +7,10 @@ from backend.utils import Utils
 
 class AuthService:
     def sign_in(self, data):
+        encrypted_password = Utils.encrypt_password(data['password'])
+
         u = User.objects(Q(user_id=data['user_id']) &
-                         Q(password=data['password'])).first()
+                         Q(encrypted_password)).first()
 
         if u is None:
             return None, None
