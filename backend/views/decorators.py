@@ -25,6 +25,7 @@ def token_required(func):
 
 
 def input_data_required(func):
+    @wraps(wrapped=func)
     def wrapper(*args, **kwargs):
         json_data = request.get_json()
         if not json_data:

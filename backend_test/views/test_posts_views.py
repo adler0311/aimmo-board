@@ -22,6 +22,11 @@ def posts():
     return [p1, p2, p3]
 
 
+@pytest.fixture
+def dummy_board_id():
+    return 'dummy_board_id'
+
+
 @mock.patch("backend.views.posts_view.Post")
 def test_get_posts(mock_post, client, posts):
     mock_post.objects.return_value = posts
@@ -37,11 +42,14 @@ def test_get_posts(mock_post, client, posts):
 
 
 @mock.patch("backend.views.posts_view.Post")
+@mock.patch("backend.views.posts_view.Board")
 @mock.patch("backend.views.decorators.AuthToken")
-def test_add_post_is_authenticated(mock_auth_token, mock_post, client):
+@mock.patch("backend.views.posts_view.PostSchema.load")
+def test_add_post_is_authenticated(mock_load, mock_auth_token, mock_board, mock_post, client):
     writer = User()
     writer.pk = 'uf85469378ebc3de6b8cf154'
 
+    dummy_board_id = 'dummmy_board_id'
     token = 'dummy_token'
 
     mock_auth_token.objects.get.return_value = AuthToken(
@@ -52,13 +60,15 @@ def test_add_post_is_authenticated(mock_auth_token, mock_post, client):
         'title': '제목',
         'content': '내용',
     }
+    mock_load.return_value = data
 
-    response = client.post('/posts/', data=json.dumps(data), headers=headers)
+    response = client.post(
+        '/boards/{}/posts/'.format(dummy_board_id), data=json.dumps(data), headers=headers)
 
     assert response.status_code == 201
 
 
-def test_add_post_empty_token(client):
+def test_add_post_empty_token(client, dummy_board_id):
     headers = {'Content-Type': 'application/json'}
 
     data = {
@@ -66,14 +76,15 @@ def test_add_post_empty_token(client):
         'content': '내용',
     }
 
-    response = client.post('/posts/', data=json.dumps(data), headers=headers)
+    response = client.post(
+        '/boards/{}/posts/'.format(dummy_board_id), data=json.dumps(data), headers=headers)
 
     assert response.status_code == 401
 
 
 @mock.patch("backend.views.posts_view.Post")
 @mock.patch("backend.views.decorators.AuthToken")
-def test_add_post_not_authenticated(mock_auth_token, mock_post, client):
+def test_add_post_not_authenticated(mock_auth_token, mock_post, client, dummy_board_id):
     invalid_token = 'dummy_token'
 
     mock_auth_token.objects.get.side_effect = DoesNotExist()
@@ -85,7 +96,8 @@ def test_add_post_not_authenticated(mock_auth_token, mock_post, client):
         'content': '내용',
     }
 
-    response = client.post('/posts/', data=json.dumps(data), headers=headers)
+    response = client.post(
+        '/boards/{}/posts/'.format(dummy_board_id), data=json.dumps(data), headers=headers)
 
     assert response.status_code == 401
 
@@ -114,16 +126,18 @@ def test_get_post_which_not_exist_id(mock_post, client, posts):
     assert http_response.status_code == 404
 
 
-def test_delete_post_empty_token(client):
+def test_delete_post_empty_token(client, dummy_board_id):
     dummy_post_id = '5f85469378ebc3de6b8cf154'
 
-    response = client.delete('/posts/{}/'.format(dummy_post_id))
+    response = client.delete(
+        '/boards/{}/posts/{}/'.format(dummy_board_id, dummy_post_id))
 
     assert response.status_code == 401
 
 
 @mock.patch("backend.views.decorators.AuthToken")
-def test_delete_post_not_authenticated(mock_auth_token, client):
+@mock.patch("backend.views.posts_view.Board")
+def test_delete_post_not_authenticated(mock_board, mock_auth_token, client, dummy_board_id):
     invalid_token = 'invalid_token'
     dummy_post_id = '5f85469378ebc3de6b8cf154'
 
@@ -133,14 +147,15 @@ def test_delete_post_not_authenticated(mock_auth_token, client):
     mock_auth_token.objects.get.side_effect = DoesNotExist()
 
     response = client.delete(
-        '/posts/{}/'.format(dummy_post_id), headers=headers)
+        '/boards/{}/posts/{}/'.format(dummy_board_id, dummy_post_id), headers=headers)
 
     assert response.status_code == 401
 
 
 @mock.patch("backend.views.decorators.AuthToken")
 @mock.patch("backend.views.posts_view.Post")
-def test_delete_post_not_authorized(mock_post, mock_auth_token, client, posts):
+@mock.patch("backend.views.posts_view.Board")
+def test_delete_post_not_authorized(mock_board, mock_post, mock_auth_token, client, dummy_board_id):
     post_pk = 'pf85469378ebc3de6b8cf154'
 
     writer = User()
@@ -166,14 +181,16 @@ def test_delete_post_not_authorized(mock_post, mock_auth_token, client, posts):
     }
 
     response = client.delete(
-        '/posts/{}/'.format(post_pk), data=json.dumps(data), headers=headers)
+        '/boards/{}/posts/{}/'.format(dummy_board_id, post_pk), data=json.dumps(data), headers=headers)
 
     assert response.status_code == 403
 
 
 @mock.patch("backend.views.decorators.AuthToken")
 @mock.patch("backend.views.posts_view.Post")
-def test_delete_post_is_authorized(mock_post, mock_auth_token, client, posts):
+@mock.patch("backend.views.posts_view.PostService.delete_post")
+def test_delete_post_is_authorized(mock_delete_post, mock_post, mock_auth_token, client, dummy_board_id):
+    mock_delete_post.return_value = True
     post_pk = 'pf85469378ebc3de6b8cf154'
 
     writer = User()
@@ -190,14 +207,14 @@ def test_delete_post_is_authorized(mock_post, mock_auth_token, client, posts):
     headers = {'Content-Type': 'application/json', 'Authorization': token}
 
     response = client.delete(
-        '/posts/{}/'.format(post_pk),  headers=headers)
+        '/boards/{}/posts/{}/'.format(dummy_board_id, post_pk),  headers=headers)
 
     assert response.status_code == 200
 
 
 @mock.patch("backend.views.posts_view.Post")
 @mock.patch("backend.views.decorators.AuthToken")
-def test_add_post_not_authenticated(mock_auth_token, mock_post, client):
+def test_add_post_not_authenticated(mock_auth_token, mock_post, client, dummy_board_id):
     invalid_token = 'dummy_token'
 
     mock_auth_token.objects.get.side_effect = DoesNotExist()
@@ -209,13 +226,14 @@ def test_add_post_not_authenticated(mock_auth_token, mock_post, client):
         'content': '내용',
     }
 
-    response = client.post('/posts/', data=json.dumps(data), headers=headers)
+    response = client.post(
+        'boards/{}/posts/'.format(dummy_board_id), data=json.dumps(data), headers=headers)
 
     assert response.status_code == 401
 
 
 @mock.patch("backend.views.decorators.AuthToken")
-def test_add_post_redundant_JSON_field(mock_auth_token, client):
+def test_add_post_redundant_JSON_field(mock_auth_token, client, dummy_board_id):
     valid_token = 'valid_token'
 
     headers = {'Content-Type': 'application/json',
@@ -226,13 +244,14 @@ def test_add_post_redundant_JSON_field(mock_auth_token, client):
         'redundant': '댓글 입니다'
     }
 
-    response = client.post('/posts/', data=json.dumps(data), headers=headers)
+    response = client.post(
+        '/boards/{}/posts/'.format(dummy_board_id), data=json.dumps(data), headers=headers)
 
     assert response.status_code == 400
 
 
 @mock.patch("backend.views.decorators.AuthToken")
-def test_add_post_insufficient_JSON_field(mock_auth_token, client):
+def test_add_post_insufficient_JSON_field(mock_auth_token, client, dummy_board_id):
     valid_token = 'valid_token'
 
     headers = {'Content-Type': 'application/json',
@@ -241,22 +260,15 @@ def test_add_post_insufficient_JSON_field(mock_auth_token, client):
         'title': '제목',
     }
 
-    response = client.post('/posts/', data=json.dumps(data), headers=headers)
+    response = client.post(
+        '/boards/{}/posts/'.format(dummy_board_id), data=json.dumps(data), headers=headers)
 
     assert response.status_code == 400
 
 
-# @mock.patch("backend.views.posts_view.Post")
-# def test_delete_post(mock_post, client, posts):
-#     p = posts[0]
-#     response = client.delete('/posts/{}/'.format(p['_id']))
-
-#     assert response.status_code == 200
-
-
 @mock.patch("backend.views.decorators.AuthToken")
 @mock.patch("backend.views.posts_view.Post")
-def test_put_not_authorized(mock_post, mock_auth_token, client, posts):
+def test_put_not_authorized(mock_post, mock_auth_token, client, dummy_board_id):
     post_pk = 'pf85469378ebc3de6b8cf154'
 
     writer = User()
@@ -281,14 +293,14 @@ def test_put_not_authorized(mock_post, mock_auth_token, client, posts):
     }
 
     response = client.put(
-        '/posts/{}/'.format(post_pk), data=json.dumps(data), headers=headers)
+        '/boards/{}/posts/{}/'.format(dummy_board_id, post_pk), data=json.dumps(data), headers=headers)
 
     assert response.status_code == 403
 
 
 @mock.patch("backend.views.decorators.AuthToken")
 @mock.patch("backend.views.posts_view.Post")
-def test_put_is_authroized(mock_post, mock_auth_token, client, posts):
+def test_put_is_authroized(mock_post, mock_auth_token, client, dummy_board_id):
     post_pk = 'pf85469378ebc3de6b8cf154'
 
     writer = User()
@@ -311,6 +323,24 @@ def test_put_is_authroized(mock_post, mock_auth_token, client, posts):
     }
 
     response = client.put(
-        '/posts/{}/'.format(post_pk), data=json.dumps(data), headers=headers)
+        '/boards/{}/posts/{}/'.format(dummy_board_id, post_pk), data=json.dumps(data), headers=headers)
 
     assert response.status_code == 200
+
+
+@mock.patch("backend.views.posts_view.Post")
+@mock.patch("backend.views.posts_view.PostSchema.dump")
+def test_board_posts_success(mock_dump, mock_post, client, posts):
+    mock_dump.return_value = {}
+    mock_post.objects.return_value = posts
+    dummy_board_id = 'dummy_board_id'
+
+    response: JSONResponse = client.get(
+        '/boards/{}/posts/'.format(dummy_board_id))
+
+    assert response.status_code == 200
+
+    schema = PostSchema(many=True)
+    result = {'posts': schema.dump(posts), 'boardId': dummy_board_id}
+    data = json.loads(response.data)
+    assert result == data
