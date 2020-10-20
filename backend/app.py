@@ -1,3 +1,4 @@
+from backend.models.board import Board
 import time
 from flask import Flask
 from mongoengine import connect
@@ -15,6 +16,7 @@ import logging
 
 
 def initiate_collection_for_test():
+    Board.objects.delete()
     Post.objects.delete()
     Comment.objects.delete()
     User.objects.delete()
@@ -22,14 +24,16 @@ def initiate_collection_for_test():
 
     title = "댓글 있는 글"
     content = lorem.paragraphs(1)
-    writer = '작성자 00'
+    writer = User(user_id='댓글 있는 글 작성자')
+    writer.save()
     post = Post(title=title, content=content, writer=writer)
     post.save()
 
     comments = []
     for i in range(5):
         c_comment = lorem.words(3)
-        writer = '댓글 작성자 {}'.format(i + 1)
+        writer = User(user_id='댓글 작성자'.format(i+1))
+        writer.save()
         comments.append(Comment(content=c_comment,
                                 writer=writer, post_id=post.id))
 
@@ -40,7 +44,8 @@ def initiate_collection_for_test():
     for i in range(10):
         title = lorem.words(5)
         content = lorem.paragraphs(1)
-        writer = '작성자 {}'.format(i + 1)
+        writer = User(user_id='글 작성자 {}'.format(i + 1))
+        writer.save()
 
         posts.append({'title': title, 'content': content,
                       'writer': writer})
