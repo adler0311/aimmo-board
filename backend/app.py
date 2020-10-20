@@ -1,3 +1,4 @@
+from typing import List
 from backend.models.board import Board
 import time
 from flask import Flask
@@ -40,17 +41,24 @@ def initiate_collection_for_test():
     Comment.objects.insert(comments)
     Post.objects(id=post.id).update_one(comments=comments)
 
-    posts = []
+    posts: List[Post] = []
     for i in range(10):
         title = lorem.words(5)
         content = lorem.paragraphs(1)
         writer = User(user_id='글 작성자 {}'.format(i + 1))
         writer.save()
 
-        posts.append({'title': title, 'content': content,
-                      'writer': writer})
+        p = Post(title=title, content=content, writer=writer)
+        saved = p.save()
+        posts.append(saved)
 
-    Post.objects.insert([Post(**data) for data in posts])
+    boards = [Board(title='게시판 {}'.format(i+1)) for i in range(3)]
+    Board.objects.insert(boards)
+
+    board = Board(title='게시글 있는 게시판', posts=posts)
+    saved_board = Board.save(board)
+    for p in posts:
+        p.update(board_id=saved_board.pk)
 
 
 def create_app():
