@@ -9,3 +9,4 @@ class PostSchema(Schema):
     content = fields.Str(required=True)
     writer = fields.Nested(UserSchema(only=['user_id', '_id']))
     comments = fields.Nested(CommentSchema(many=True))
+    created = fields.Str()

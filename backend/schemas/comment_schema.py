@@ -7,3 +7,4 @@ class CommentSchema(Schema):
     content = fields.Str(required=True)
     writer = fields.Nested(UserSchema(only=['user_id', '_id']))
     post_id = fields.Str(required=True)
+    created = fields.Str()
