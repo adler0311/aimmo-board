@@ -71,9 +71,9 @@ def test_add_comment_not_authenticated(mock_auth_token, client):
 
 
 @mock.patch("backend.views.decorators.AuthToken")
-@mock.patch("backend.schemas.comment_schema.CommentSchema")
+@mock.patch("backend.schemas.comment_schema.CommentSchema.load")
 @mock.patch("backend.views.comments_view.Post")
-def test_add_comment_invalid_post(mock_post, mock_comment_schema, mock_auth_token, client):
+def test_add_comment_invalid_post(mock_post, mock_load, mock_auth_token, client):
     dummy_post_id = '5f85469378ebc3de6b8cf156'
     invalid_token = 'invalid_token'
 
@@ -85,7 +85,7 @@ def test_add_comment_invalid_post(mock_post, mock_comment_schema, mock_auth_toke
     }
 
     mock_post.objects.get.side_effect = DoesNotExist()
-    mock_comment_schema().load.return_value = data
+    mock_load.return_value = data
 
     response = client.post(
         '/posts/{}/comments/'.format(dummy_post_id), data=json.dumps(data), headers=headers)
@@ -94,10 +94,10 @@ def test_add_comment_invalid_post(mock_post, mock_comment_schema, mock_auth_toke
 
 
 @mock.patch("backend.views.decorators.AuthToken")
-@mock.patch("backend.schemas.comment_schema.CommentSchema")
+@mock.patch("backend.schemas.comment_schema.CommentSchema.load")
 @mock.patch("backend.views.comments_view.Post")
 @mock.patch("backend.views.comments_view.Comment")
-def test_add_comment_is_authenticated(mock_comment, mock_post, mock_comment_schema,
+def test_add_comment_is_authenticated(mock_comment, mock_post, mock_load,
                                       mock_auth_token, client):
 
     dummy_post_id = '5f85469378ebc3de6b8cf156'
@@ -110,7 +110,7 @@ def test_add_comment_is_authenticated(mock_comment, mock_post, mock_comment_sche
         'content': '댓글입니다',
     }
 
-    mock_comment_schema().load.return_value = data
+    mock_load.return_value = data
 
     response = client.post(
         '/posts/{}/comments/'.format(dummy_post_id), data=json.dumps(data), headers=headers)
@@ -167,20 +167,21 @@ def test_put_comment_not_authorized(mock_comment, mock_auth_token, client, comme
 
 @mock.patch("backend.views.decorators.AuthToken")
 @mock.patch("backend.views.comments_view.Comment")
-def test_put_comment_is_success(mock_comment, mock_auth_token, client, comments):
+@mock.patch("backend.views.comments_view.CommentSchema.load")
+def test_put_comment_is_success(mock_load, mock_comment, mock_auth_token, client, comments):
     dummy_post_id = '5f85469378ebc3de6b8cf156'
     c = comments[0]
 
     writer = c.writer
     writer_token = 'writer_token'
-    mock_auth_token.objects.get.return_value = AuthToken(user=writer)
+    data = {'content': '업데이트할 댓글'}
 
+    mock_auth_token.objects.get.return_value = AuthToken(user=writer)
     mock_comment.objects.get.return_value = c
+    mock_load.retun_value = data
 
     headers = {'Content-Type': 'application/json',
                'Authorization': writer_token}
-
-    data = {'content': '업데이트할 댓글'}
 
     response = client.put(
         '/posts/{post_id}/comments/{comment_id}'.format(

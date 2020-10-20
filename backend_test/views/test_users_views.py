@@ -6,19 +6,6 @@ from bson import ObjectId
 from backend.models.user import User
 
 
-@mock.patch("backend.views.users_view.User")
-def test_add_user(mock_user, client):
-    headers = {'Content-Type': 'application/json'}
-    data = {
-        'userId': '아이디123',
-        'password': '비밀번호123',
-    }
-
-    response = client.post('/users/', data=json.dumps(data), headers=headers)
-
-    assert response.status_code == 201
-
-
 def test_add_user_empty_data(client):
     headers = {'Content-Type': 'application/json'}
 

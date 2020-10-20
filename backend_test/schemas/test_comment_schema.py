@@ -27,7 +27,7 @@ def test_dump_comments_with_user():
 def test_load_comment_with_user():
     schema = CommentSchema()
 
-    c = {'content': '내용', 'writer': {
+    c = {'post_id': 'fff', 'content': '내용', 'writer': {
         'userId': '작성자'}}
     result = schema.load(c)
 

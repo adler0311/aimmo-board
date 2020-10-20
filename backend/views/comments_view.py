@@ -3,7 +3,7 @@ from flask_classful import FlaskView, route
 from backend.models.comment import Comment
 from backend.models.post import Post
 from backend.schemas.comment_schema import CommentSchema
-from mongoengine import DoesNotExist
+from mongoengine import DoesNotExist, QuerySet
 from bson import ObjectId
 from backend.views.decorators import token_required
 from functools import wraps
