@@ -1,3 +1,5 @@
+from mongoengine.queryset.transform import update
+from backend.models.subcomment import Subcomment
 from typing import List
 from backend.models.board import Board
 import time
@@ -13,6 +15,7 @@ from backend.views.comments_view import CommentsView
 from backend.views.users_view import UsersView
 from backend.views.auth_view import AuthView
 from backend.views.boards_view import BoardsView
+from backend.views.subcomments_view import SubcommentsView
 import logging
 
 
@@ -22,24 +25,44 @@ def initiate_collection_for_test():
     Comment.objects.delete()
     User.objects.delete()
     AuthToken.objects.delete()
+    Subcomment.objects.delete()
 
     title = "댓글 있는 글"
     content = lorem.paragraphs(1)
     writer = User(user_id='댓글 있는 글 작성자')
     writer.save()
-    post = Post(title=title, content=content, writer=writer)
-    post.save()
+    post_with_comment = Post(title=title, content=content, writer=writer)
+    post_with_comment.save()
 
     comments = []
     for i in range(5):
         c_comment = lorem.words(3)
-        writer = User(user_id='댓글 작성자'.format(i+1))
+        writer = User(user_id='댓글 작성자 {}'.format(i+1))
         writer.save()
         comments.append(Comment(content=c_comment,
-                                writer=writer, post_id=post.id))
+                                writer=writer, post_id=post_with_comment.id))
 
-    Comment.objects.insert(comments)
-    Post.objects(id=post.id).update_one(comments=comments)
+    writer = User(
+        user_id="대댓글 있는 댓글 작성자 1")
+    writer.save()
+    c_with_sub = Comment(content="대댓글 있는 댓글", writer=writer,
+                         post_id=post_with_comment.id)
+    c_with_sub.save()
+    subcomments = []
+    for i in range(3):
+        writer = User(user_id='대댓글 작성자 {}'.format(i+1))
+        writer.save()
+        sub = Subcomment(content="대댓글 {}".format(i+1), writer=writer)
+        sub.save()
+        subcomments.append(sub)
+
+    Comment.objects(id=c_with_sub.id).update_one(subcomments=subcomments)
+    comments.append(c_with_sub)
+
+    for comment in comments:
+        comment.save()
+
+    Post.objects(id=post_with_comment.id).update_one(comments=comments)
 
     posts: List[Post] = []
     for i in range(10):
@@ -51,6 +74,7 @@ def initiate_collection_for_test():
         p = Post(title=title, content=content, writer=writer)
         saved = p.save()
         posts.append(saved)
+    posts.append(post_with_comment)
 
     boards = [Board(title='게시판 {}'.format(i+1)) for i in range(3)]
     Board.objects.insert(boards)
@@ -59,6 +83,8 @@ def initiate_collection_for_test():
     saved_board = Board.save(board)
     for p in posts:
         p.update(board_id=saved_board.pk)
+
+    post_with_comment.update(board_id=saved_board.pk)
 
 
 def create_app():
@@ -74,5 +100,6 @@ def create_app():
     UsersView.register(app)
     AuthView.register(app)
     BoardsView.register(app)
+    SubcommentsView.register(app)
 
     return app
