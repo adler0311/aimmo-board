@@ -62,7 +62,7 @@ class CommentsView(FlaskView):
         try:
             p = Post.objects.get(id=post_id)
 
-            c = Comment(**data, post_id=post_id)
+            c = Comment(**data, post_id=post_id, writer=auth_token.user)
             c.save()
 
             Post.objects(pk=p.id).update_one(comments=[c] + p.comments)
