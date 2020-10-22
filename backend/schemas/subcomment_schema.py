@@ -9,3 +9,4 @@ class SubcommentSchema(Schema):
     post_id = fields.Str(required=False)
     parent_id = fields.Str(required=False)
     created = fields.Str()
+    likes = fields.Int()

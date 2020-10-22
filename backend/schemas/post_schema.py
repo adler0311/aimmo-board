@@ -1,3 +1,4 @@
+from backend.schemas.like_schema import LikeSchema
 from marshmallow import Schema, fields, ValidationError
 from backend.schemas.comment_schema import CommentSchema
 from backend.schemas.user_schema import UserSchema
@@ -10,3 +11,5 @@ class PostSchema(Schema):
     writer = fields.Nested(UserSchema(only=['user_id', '_id']))
     comments = fields.Nested(CommentSchema(many=True))
     created = fields.Str()
+    # likes = fields.Nested(LikeSchema(many=True))
+    likes = fields.Number()

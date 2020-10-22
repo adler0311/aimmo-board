@@ -10,3 +10,4 @@ class CommentSchema(Schema):
     post_id = fields.Str(required=False)
     created = fields.Str()
     subcomments = fields.Nested(SubcommentSchema(many=True))
+    likes = fields.Number()

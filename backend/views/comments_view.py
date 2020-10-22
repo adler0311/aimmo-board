@@ -71,13 +71,14 @@ class CommentsView(FlaskView):
 
         return {'result': True}, 201
 
-    # def get(self, id):
-    #     try:
-    #         post = Post.objects.get(pk=id)
-    #         result = post_schema.dump(post)
-    #         return {'data': result}, 200
-    #     except DoesNotExist as e:
-    #         return jsonify({'message': 'Post matching query does not exist'}), 404
+    @route('/<post_id>/comments/<comment_id>', methods=['GET'])
+    def get(self, post_id, comment_id):
+        try:
+            comment = Comment.objects.get(pk=comment_id)
+            result = comment_schema.dump(comment)
+            return {'comment': result}, 200
+        except DoesNotExist as e:
+            return jsonify({'message': 'Post matching query does not exist'}), 404
 
     @token_required
     @authorization_required
@@ -104,6 +105,7 @@ class CommentsView(FlaskView):
     @authorization_required
     @route('/<string:post_id>/comments/<string:comment_id>/', methods=['DELETE'])
     def delete(self, post_id, comment_id, **kwargs):
+
         result = Comment.objects(pk=comment_id).delete()
         if not result:
             return jsonify({'message': 'Comment matching id does not exist'}), 404

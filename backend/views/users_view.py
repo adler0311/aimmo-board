@@ -18,6 +18,7 @@ class UsersView(FlaskView):
         json_data = kwargs['json_data']
 
         try:
+            # 암호화 하는 작업을 스키마에서 할 수 있을 거 같은데
             data = user_schema.load(json_data)
         except ValidationError as err:
             return jsonify(err.messages), 400

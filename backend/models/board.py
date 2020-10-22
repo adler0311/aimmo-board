@@ -8,4 +8,4 @@ from mongoengine.fields import ListField, ReferenceField
 class Board(Document):
     title = StringField()
     posts = ListField(ReferenceField(Post))
-    created = DateTimeField(default=datetime.datetime.now)
+    # created = DateTimeField(default=datetime.datetime.now)

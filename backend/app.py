@@ -1,3 +1,4 @@
+from backend.models.like import Like
 from mongoengine.queryset.transform import update
 from backend.models.subcomment import Subcomment
 from typing import List
@@ -16,6 +17,7 @@ from backend.views.users_view import UsersView
 from backend.views.auth_view import AuthView
 from backend.views.boards_view import BoardsView
 from backend.views.subcomments_view import SubcommentsView
+from backend.views.likes_view import LikesView
 import logging
 
 
@@ -26,6 +28,7 @@ def initiate_collection_for_test():
     User.objects.delete()
     AuthToken.objects.delete()
     Subcomment.objects.delete()
+    Like.objects.delete()
 
     title = "댓글 있는 글"
     content = lorem.paragraphs(1)
@@ -101,5 +104,6 @@ def create_app():
     AuthView.register(app)
     BoardsView.register(app)
     SubcommentsView.register(app)
+    LikesView.register(app)
 
     return app

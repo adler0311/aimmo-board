@@ -81,15 +81,15 @@ class SubcommentsView(FlaskView):
 
         return {'result': result}, 201
 
-    # # def get(self, id):
-    # #     try:
-    # #         post = Post.objects.get(pk=id)
-    # #         result = post_schema.dump(post)
-    # #         return {'data': result}, 200
-    # #     except DoesNotExist as e:
-    # #         return jsonify({'message': 'Post matching query does not exist'}), 404
+    @route('/<comment_id>/subcomments/<subcomment_id>', methods=['GET'])
+    def get(self, comment_id, subcomment_id):
+        try:
+            subcomment = Subcomment.objects.get(pk=subcomment_id)
+            result = subcomment_schema.dump(subcomment)
+            return {'subcomment': result}, 200
+        except DoesNotExist as e:
+            return jsonify({'message': 'Post matching query does not exist'}), 404
 
-    # 순서는 위에서부터 진행
     @token_required
     @authorization_required
     @input_data_required
