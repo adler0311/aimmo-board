@@ -26,7 +26,7 @@ class TestPostModel(TestCase):
         p = Post.objects().first()
         assert p.title == '제목'
 
-        result = Post.objects().get(pk=p.id)
+        result = Post.objects().get(id=p.id)
 
         assert result is not None
         assert type(result) is Post
@@ -39,7 +39,7 @@ class TestPostModel(TestCase):
         assert p.title == '제목'
 
         id = p.id
-        result = Post.objects(pk=id).update_one(title="변경된 제목")
+        result = Post.objects(id=id).update_one(title="변경된 제목")
 
         modified = Post.objects().first()
         assert modified.title == '변경된 제목'
@@ -51,7 +51,7 @@ class TestPostModel(TestCase):
         assert p.title == '제목'
 
         id = p.id
-        result = Post.objects(pk=id).delete()
+        result = Post.objects(id=id).delete()
 
         assert result == 1
         assert len(Post.objects) == 0

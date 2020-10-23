@@ -46,7 +46,7 @@ class TestCommentModel(TestCase):
         Comment.objects.insert([Comment(**c) for c in self.comments])
         c: Comment = Comment.objects.first()
 
-        result = Comment.objects(pk=c.pk).update_one(content="업데이트 내용")
+        result = Comment.objects(id=c.pk).update_one(content="업데이트 내용")
 
         assert result == 1
         assert Comment.objects.get(id=c.pk).content == "업데이트 내용"
@@ -55,7 +55,7 @@ class TestCommentModel(TestCase):
         Comment.objects.insert([Comment(**c) for c in self.comments])
         c: Comment = Comment.objects.first()
 
-        result = Comment.objects(pk=c.pk).delete()
+        result = Comment.objects(id=c.pk).delete()
 
         assert result == 1
         comments = Comment.objects(id=c.pk)

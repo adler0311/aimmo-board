@@ -30,10 +30,10 @@ def test_get_subcomments(mock_subcomment, client, dummy_comment_id):
 
 @mock.patch("backend.views.decorators.AuthToken")
 @mock.patch("backend.schemas.subcomment_schema.SubcommentSchema.load")
-@mock.patch("backend.views.subcomments_view.SubcommentService.add_subcomment")
-def test_add_subcomment_is_authenticated(mock_add_subcomment, mock_load, mock_auth_token, client,
+@mock.patch("backend.views.subcomments_view.SubcommentService.post")
+def test_add_subcomment_is_authenticated(mock_post, mock_load, mock_auth_token, client,
                                          dummy_comment_id, valid_token_header):
-    mock_add_subcomment.return_value = True
+    mock_post.return_value = True
 
     data = {
         'content': '대댓글입니다',
@@ -49,8 +49,8 @@ def test_add_subcomment_is_authenticated(mock_add_subcomment, mock_load, mock_au
 
 @mock.patch("backend.views.decorators.AuthToken")
 @mock.patch("backend.views.subcomments_view.Subcomment")
-def test_put_comment_not_authorized(mock_subcomment, mock_auth_token, client,
-                                    not_writer_token_header, dummy_comment_id, dummy_subcomment_id):
+def test_put_subcomment_not_authorized(mock_subcomment, mock_auth_token, client,
+                                       not_writer_token_header, dummy_comment_id, dummy_subcomment_id):
     writer = User(user_id='대댓글 작성자')
     writer.pk = 'uf85469378ebc3de6b8cf150'
 
@@ -71,12 +71,12 @@ def test_put_comment_not_authorized(mock_subcomment, mock_auth_token, client,
 @mock.patch("backend.views.decorators.AuthToken")
 @mock.patch("backend.views.subcomments_view.Subcomment")
 @mock.patch("backend.views.subcomments_view.SubcommentSchema.load")
-def test_put_comment_is_success(mock_load, mock_subcomment, mock_auth_token, client,
-                                writer_token_header, dummy_comment_id, dummy_subcomment_id):
+def test_put_subcomment_is_success(mock_load, mock_subcomment, mock_auth_token, client,
+                                   writer_token_header, dummy_comment_id, dummy_subcomment_id):
 
     writer = User(user_id='대댓글 작성자')
     writer.pk = 'uf85469378ebc3de6b8cf150'
-    
+
     data = {'content': '업데이트할 대댓글'}
 
     mock_subcomment.objects.get.return_value = Subcomment(writer=writer)
@@ -93,8 +93,8 @@ def test_put_comment_is_success(mock_load, mock_subcomment, mock_auth_token, cli
 
 @mock.patch("backend.views.decorators.AuthToken")
 @mock.patch("backend.views.subcomments_view.Subcomment")
-def test_delete_comment_not_authorized(mock_subcomment, mock_auth_token, client,
-                                       not_writer_token_header, dummy_comment_id, dummy_subcomment_id):
+def test_delete_subcomment_not_authorized(mock_subcomment, mock_auth_token, client,
+                                          not_writer_token_header, dummy_comment_id, dummy_subcomment_id):
 
     writer = User(user_id='대댓글 작성자')
     writer.pk = 'uf85469378ebc3de6b8cf150'
@@ -113,10 +113,10 @@ def test_delete_comment_not_authorized(mock_subcomment, mock_auth_token, client,
 
 @mock.patch("backend.views.decorators.AuthToken")
 @mock.patch("backend.views.subcomments_view.Subcomment")
-@mock.patch("backend.views.subcomments_view.SubcommentService.delete_subcomment")
-def test_delete_comment_is_success(mock_delete_subcomment, mock_subcomment, mock_auth_token, client,
-                                   writer_token_header, dummy_comment_id, dummy_subcomment_id):
-    mock_delete_subcomment.return_value = True
+@mock.patch("backend.views.subcomments_view.SubcommentService.delete")
+def test_delete_subcomment_is_success(mock_delete, mock_subcomment, mock_auth_token, client,
+                                      writer_token_header, dummy_comment_id, dummy_subcomment_id):
+    mock_delete.return_value = True
 
     writer = User(user_id='대댓글 작성자')
     writer.pk = 'uf85469378ebc3de6b8cf150'
@@ -125,6 +125,8 @@ def test_delete_comment_is_success(mock_delete_subcomment, mock_subcomment, mock
     mock_auth_token.objects.get.return_value = AuthToken(user=writer)
 
     response = client.delete(
-        '/comments/{}/subcomments/{}/'.format(dummy_comment_id, dummy_subcomment_id), headers=writer_token_header)
+        '/comments/{}/subcomments/{}/'.format(
+            dummy_comment_id, dummy_subcomment_id),
+        headers=writer_token_header)
 
     assert response.status_code == 200

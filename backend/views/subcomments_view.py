@@ -11,7 +11,7 @@ from backend.models.subcomment import Subcomment
 
 subcomments_schema = SubcommentSchema(many=True)
 subcomment_schema = SubcommentSchema()
-subcomment_service = SubcommentService()
+service = SubcommentService()
 
 
 def authorization_required(func):
@@ -21,7 +21,7 @@ def authorization_required(func):
         auth_token = kwargs['auth_token']
 
         qs: QuerySet = Subcomment.objects
-        subcomment = qs.get(pk=subcomment_id)
+        subcomment = qs.get(id=subcomment_id)
 
         if subcomment.writer.id != auth_token.user.id:
             return jsonify({'message': 'not authorized'}), 403
@@ -47,8 +47,7 @@ class SubcommentsView(BaseView):
     def post_subcomment(self, comment_id, **kwargs):
         auth_token, data = kwargs['auth_token'], kwargs['data']
 
-        result = subcomment_service.add_subcomment(
-            data, comment_id, auth_token.user)
+        result = service.post(data, comment_id, auth_token.user)
 
         if not result:
             return jsonify({'message': 'Comment matching id does not exist'}), 404
@@ -58,10 +57,10 @@ class SubcommentsView(BaseView):
     @route('/<comment_id>/subcomments/<subcomment_id>', methods=['GET'])
     def get(self, comment_id, subcomment_id):
         try:
-            subcomment = Subcomment.objects.get(pk=subcomment_id)
+            subcomment = Subcomment.objects.get(id=subcomment_id)
             result = subcomment_schema.dump(subcomment)
             return {'subcomment': result}, 200
-        except DoesNotExist as e:
+        except DoesNotExist:
             return jsonify({'message': 'Post matching query does not exist'}), 404
 
     @token_required
@@ -72,7 +71,7 @@ class SubcommentsView(BaseView):
     def put_subcomment(self, comment_id, subcomment_id, **kwargs):
         data = kwargs['data']
 
-        result = Subcomment.objects(pk=subcomment_id).update_one(
+        result = Subcomment.objects(id=subcomment_id).update_one(
             content=data['content'])
 
         if not result:
@@ -85,8 +84,7 @@ class SubcommentsView(BaseView):
     @route('/<comment_id>/subcomments/<subcomment_id>/', methods=['DELETE'])
     def delete(self, comment_id, subcomment_id, **kwargs):
 
-        result = subcomment_service.delete_subcomment(
-            comment_id, subcomment_id)
+        result = service.delete(comment_id, subcomment_id)
 
         if not result:
             return jsonify({'message': 'id does not exist'}), 404

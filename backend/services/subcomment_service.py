@@ -6,28 +6,27 @@ from bson import ObjectId
 
 
 class SubcommentService:
-    def add_subcomment(self, data, comment_id, user: User) -> bool:
+    def post(self, data, comment_id, user: User) -> bool:
         try:
             c = Comment.objects.get(id=comment_id)
             sc = Subcomment(**data, parent_id=comment_id, writer=user)
             sc.save()
 
-            Comment.objects(pk=c.id).update_one(
+            Comment.objects(id=c.id).update_one(
                 subcomments=[sc] + c.subcomments)
             return True
         except DoesNotExist:
             return False
 
-    def delete_subcomment(self, comment_id, subcomment_id):
-        result = Subcomment.objects(pk=subcomment_id).delete()
+    def delete(self, comment_id, subcomment_id):
+        result = Subcomment.objects(id=subcomment_id).delete()
         if not result:
             return False
 
         try:
-            c = Comment.objects.get(pk=comment_id)
-            Comment.objects(pk=c.id).update_one(subcomments=list(
+            c = Comment.objects.get(id=comment_id)
+            Comment.objects(id=c.id).update_one(subcomments=list(
                 filter(lambda c: c.id != ObjectId(subcomment_id), c.subcomments)))
             return True
-        except Exception as e:
-
+        except DoesNotExist:
             return False

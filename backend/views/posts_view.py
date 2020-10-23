@@ -1,5 +1,4 @@
 from backend.views.base_view import BaseView
-from backend.models.board import Board
 from functools import wraps
 from flask import jsonify
 from flask_classful import route
@@ -11,7 +10,7 @@ from backend.services.post_service import PostService
 
 posts_schema = PostSchema(many=True)
 post_schema = PostSchema()
-post_service = PostService()
+service = PostService()
 
 
 def authorization_required(func):
@@ -21,7 +20,7 @@ def authorization_required(func):
         auth_token = kwargs['auth_token']
 
         qs: QuerySet = Post.objects
-        post = qs.get(pk=post_id)
+        post = qs.get(id=post_id)
 
         if post.writer.id != auth_token.user.id:
             return jsonify({'message': 'not authorized'}), 403
@@ -43,11 +42,11 @@ class PostsView(BaseView):
     @route('/boards/<board_id>/posts/<post_id>/', methods=['GET'])
     def get(self, board_id, post_id):
         try:
-            post = Post.objects.get(pk=post_id)
+            post = Post.objects.get(id=post_id)
             result = post_schema.dump(post)
             return {'data': result}, 200
         except DoesNotExist as e:
-            return jsonify({'message': 'Post matching query does not exist'}), 404
+            return jsonify({'message': 'id does not exist'}), 404
 
     @route('/boards/<string:board_id>/posts/', methods=['GET'])
     def get_board_posts(self, board_id):
@@ -56,7 +55,7 @@ class PostsView(BaseView):
             result = posts_schema.dump(posts)
             return {'posts': result, 'boardId': board_id}, 200
         except DoesNotExist as e:
-            return jsonify({'message': 'Posts matching query does not exist'}), 404
+            return jsonify({'message': 'id does not exist'}), 404
 
     @token_required
     @input_data_required
@@ -65,17 +64,9 @@ class PostsView(BaseView):
     def post(self, board_id, **kwargs):
         auth_token, data = kwargs['auth_token'], kwargs['data']
 
-        try:
-            b = Board.objects.get(id=board_id)
-
-            data['writer'] = auth_token.user
-            data['board_id'] = board_id
-            p = Post(**data)
-            p.save()
-
-            Board.objects(pk=board_id).update_one(posts=[p] + b.posts)
-        except:
-            return jsonify({'message': 'board matching id does not exist'}), 404
+        result = service.post(board_id, data, auth_token.user)
+        if not result:
+            return jsonify({'message': 'id does not exist'}), 404
 
         return {'result': True}, 201
 
@@ -87,10 +78,10 @@ class PostsView(BaseView):
     def put(self, board_id, post_id, **kwargs):
         data = kwargs['data']
 
-        result = post_service.update(board_id, post_id, data)
+        result = service.update(board_id, post_id, data)
 
         if result is None:
-            return jsonify({'message': 'Post matching id does not exist'}), 404
+            return jsonify({'message': 'id does not exist'}), 404
 
         return {'result': True}, 200
 
@@ -98,9 +89,9 @@ class PostsView(BaseView):
     @authorization_required
     @route('/boards/<board_id>/posts/<post_id>/', methods=['DELETE'])
     def delete(self, board_id, post_id, **kwargs):
-        result = post_service.delete_post(board_id, post_id)
+        result = service.delete(board_id, post_id)
 
         if not result:
-            return jsonify({'message': 'Post matching id does not exist'}), 404
+            return jsonify({'message': 'id does not exist'}), 404
 
         return {'result': True}, 200

@@ -63,15 +63,17 @@ def test_get_posts(mock_post, client, posts):
 
 
 @mock.patch("backend.views.posts_view.Post")
-@mock.patch("backend.views.posts_view.Board")
 @mock.patch("backend.views.decorators.AuthToken")
 @mock.patch("backend.views.posts_view.PostSchema.load")
-def test_add_post_is_authenticated(mock_load, mock_auth_token, mock_board, mock_post, client,
+@mock.patch("backend.views.posts_view.PostService.post")
+def test_add_post_is_authenticated(mock_post_method, mock_load, mock_auth_token, mock_post,
+                                   client,
                                    dummy_writer, dummy_board_id, valid_token_header, valid_token, dummy_data):
 
     mock_auth_token.objects.get.return_value = AuthToken(
         token=valid_token, user=dummy_writer)
     mock_load.return_value = dummy_data
+    mock_post_method.return_value = True
 
     response = client.post(
         '/boards/{}/posts/'.format(dummy_board_id), data=json.dumps(dummy_data), headers=valid_token_header)
@@ -117,8 +119,7 @@ def test_delete_post_empty_token(client, dummy_board_id, dummy_post_id):
 
 
 @mock.patch("backend.views.decorators.AuthToken")
-@mock.patch("backend.views.posts_view.Board")
-def test_delete_post_not_authenticated(mock_board, mock_auth_token, client,
+def test_delete_post_not_authenticated(mock_auth_token, client,
                                        dummy_board_id, dummy_post_id, invalid_token_header):
     mock_auth_token.objects.get.side_effect = DoesNotExist()
 
@@ -130,8 +131,7 @@ def test_delete_post_not_authenticated(mock_board, mock_auth_token, client,
 
 @mock.patch("backend.views.decorators.AuthToken")
 @mock.patch("backend.views.posts_view.Post")
-@mock.patch("backend.views.posts_view.Board")
-def test_delete_post_not_authorized(mock_board, mock_post, mock_auth_token, client,
+def test_delete_post_not_authorized(mock_post, mock_auth_token, client,
                                     dummy_board_id, valid_token, valid_token_header, dummy_data):
     post_pk = 'pf85469378ebc3de6b8cf154'
 
@@ -156,10 +156,10 @@ def test_delete_post_not_authorized(mock_board, mock_post, mock_auth_token, clie
 
 @mock.patch("backend.views.decorators.AuthToken")
 @mock.patch("backend.views.posts_view.Post")
-@mock.patch("backend.views.posts_view.PostService.delete_post")
-def test_delete_post_is_authorized(mock_delete_post, mock_post, mock_auth_token, client,
+@mock.patch("backend.views.posts_view.PostService.delete")
+def test_delete_post_is_authorized(mock_delete, mock_post, mock_auth_token, client,
                                    dummy_board_id, valid_token, valid_token_header):
-    mock_delete_post.return_value = True
+    mock_delete.return_value = True
     post_pk = 'pf85469378ebc3de6b8cf154'
 
     writer = User()

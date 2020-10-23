@@ -1,18 +1,35 @@
+from mongoengine.errors import DoesNotExist
+from backend.models.user import User
 from backend.models.post import Post
 from backend.models.board import Board
 from bson import ObjectId
 
 
 class PostService:
-    def delete_post(self, board_id, post_id):
-        result = Post.objects(pk=post_id).delete()
+    def post(self, board_id, data, user: User) -> bool:
+        try:
+            b = Board.objects.get(id=board_id)
+
+            data['writer'] = user
+            data['board_id'] = board_id
+
+            p = Post(**data)
+            p.save()
+
+            Board.objects(id=board_id).update_one(posts=[p] + b.posts)
+            return True
+        except DoesNotExist:
+            return False
+
+    def delete(self, board_id, post_id):
+        result = Post.objects(id=post_id).delete()
 
         if not result:
             return False
 
         try:
-            b = Board.objects.get(pk=board_id)
-            Board.objects(pk=b.id).update_one(posts=list(
+            b = Board.objects.get(id=board_id)
+            Board.objects(id=b.id).update_one(posts=list(
                 filter(lambda p: p.id != ObjectId(post_id), b.posts)))
 
             return True
