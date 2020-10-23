@@ -11,4 +11,5 @@ class Content(Document):
     likes = IntField()
     created = DateTimeField(default=datetime.datetime.now)
 
-    meta = {'allow_inheritance': True}
+    # meta = {'allow_inheritance': True}
+    meta = {'abstract': True}
