@@ -4,9 +4,8 @@ from backend.schemas.subcomment_schema import SubcommentSchema
 from flask import jsonify
 from flask_classful import route
 from mongoengine import DoesNotExist, QuerySet
-from backend.views.decorators import input_data_required, token_required
+from backend.views.decorators import deserialize, input_data_required, token_required
 from functools import wraps
-from marshmallow import ValidationError
 from backend.models.subcomment import Subcomment
 
 
@@ -43,14 +42,10 @@ class SubcommentsView(BaseView):
 
     @token_required
     @input_data_required
+    @deserialize(subcomment_schema)
     @route('/<comment_id>/subcomments/', methods=['POST'])
     def post_subcomment(self, comment_id, **kwargs):
-        auth_token, json_data = kwargs['auth_token'], kwargs['json_data']
-
-        try:
-            data = subcomment_schema.load(json_data)
-        except ValidationError as err:
-            return jsonify(err.messages), 400
+        auth_token, data = kwargs['auth_token'], kwargs['data']
 
         result = subcomment_service.add_subcomment(
             data, comment_id, auth_token.user)
@@ -72,14 +67,10 @@ class SubcommentsView(BaseView):
     @token_required
     @authorization_required
     @input_data_required
+    @deserialize(subcomment_schema)
     @route('/<comment_id>/subcomments/<subcomment_id>', methods=['PUT'])
     def put_subcomment(self, comment_id, subcomment_id, **kwargs):
-        json_data = kwargs['json_data']
-
-        try:
-            data = subcomment_schema.load(json_data)
-        except ValidationError as err:
-            return jsonify(err.messages), 400
+        data = kwargs['data']
 
         result = Subcomment.objects(pk=subcomment_id).update_one(
             content=data['content'])

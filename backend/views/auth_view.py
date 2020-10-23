@@ -1,11 +1,9 @@
 from backend.views.base_view import BaseView
-from unittest.mock import Base
 from backend.models.auth_token import AuthToken
 from flask import jsonify
 from backend.schemas.user_schema import UserSchema
-from marshmallow import ValidationError
 from backend.services.auth_service import AuthService
-from backend.views.decorators import input_data_required, token_required
+from backend.views.decorators import deserialize, input_data_required, token_required
 
 user_schema = UserSchema()
 user_response_schema = UserSchema(only=['user_id', '_id'])
@@ -15,13 +13,9 @@ auth_service = AuthService()
 class AuthView(BaseView):
 
     @input_data_required
+    @deserialize(user_schema)
     def post(self, **kwargs):
-        json_data = kwargs['json_data']
-
-        try:
-            data = user_schema.load(json_data)
-        except ValidationError as err:
-            return jsonify(err.messages), 400
+        data = kwargs['data']
 
         token, u = auth_service.sign_in(data)
 

@@ -6,8 +6,7 @@ from flask_classful import route
 from backend.models.post import Post
 from backend.schemas.post_schema import PostSchema
 from mongoengine import DoesNotExist, QuerySet
-from backend.views.decorators import token_required, input_data_required
-from marshmallow import ValidationError
+from backend.views.decorators import deserialize, token_required, input_data_required
 from backend.services.post_service import PostService
 
 posts_schema = PostSchema(many=True)
@@ -61,14 +60,10 @@ class PostsView(BaseView):
 
     @token_required
     @input_data_required
+    @deserialize(post_schema)
     @route('/boards/<board_id>/posts/', methods=['POST'])
     def post(self, board_id, **kwargs):
-        auth_token, json_data = kwargs['auth_token'], kwargs['json_data']
-
-        try:
-            data = post_schema.load(json_data)
-        except ValidationError as err:
-            return jsonify(err.messages), 400
+        auth_token, data = kwargs['auth_token'], kwargs['data']
 
         try:
             b = Board.objects.get(id=board_id)
@@ -86,14 +81,10 @@ class PostsView(BaseView):
     @token_required
     @authorization_required
     @input_data_required
+    @deserialize(post_schema)
     @route('/boards/<board_id>/posts/<post_id>/', methods=['PUT'])
     def put(self, board_id, post_id, **kwargs):
-        auth_token, json_data = kwargs['auth_token'], kwargs['json_data']
-
-        try:
-            data = post_schema.load(json_data)
-        except ValidationError as err:
-            return jsonify(err.messages), 400
+        data = kwargs['data']
 
         result = Post.objects(pk=post_id).update_one(
             title=data['title'], content=data['content'])

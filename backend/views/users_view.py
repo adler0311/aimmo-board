@@ -1,8 +1,6 @@
-from flask import jsonify
 from flask_classful import FlaskView
 from backend.schemas.user_schema import UserSchema
-from marshmallow import ValidationError
-from backend.views.decorators import input_data_required
+from backend.views.decorators import deserialize, input_data_required
 from backend.services.user_service import UserService
 
 
@@ -14,14 +12,9 @@ service = UserService()
 class UsersView(FlaskView):
 
     @input_data_required
+    @deserialize(user_schema)
     def post(self, **kwargs):
-        json_data = kwargs['json_data']
-
-        try:
-            # 암호화 하는 작업을 스키마에서 할 수 있을 거 같은데
-            data = user_schema.load(json_data)
-        except ValidationError as err:
-            return jsonify(err.messages), 400
+        data = kwargs['data']
 
         token, user = service.signup(data)
 

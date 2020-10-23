@@ -1,14 +1,13 @@
 from backend.views.base_view import BaseView
-from flask import request, jsonify
+from flask import jsonify
 from flask_classful import route
 from backend.models.comment import Comment
 from backend.models.post import Post
 from backend.schemas.comment_schema import CommentSchema
 from mongoengine import DoesNotExist, QuerySet
 from bson import ObjectId
-from backend.views.decorators import token_required
+from backend.views.decorators import deserialize, input_data_required, token_required
 from functools import wraps
-from marshmallow import ValidationError
 
 
 comments_schema = CommentSchema(many=True)
@@ -42,17 +41,11 @@ class CommentsView(BaseView):
         return {'comments': result, 'postId': post_id}
 
     @token_required
+    @input_data_required
+    @deserialize(comment_schema)
     @route('/<post_id>/comments/', methods=['POST'])
     def post_comment(self, post_id, **kwargs):
-        auth_token = kwargs['auth_token']
-        json_data = request.get_json()
-        if not json_data:
-            return jsonify({'message': 'No input data provided'}), 400
-
-        try:
-            data = comment_schema.load(json_data)
-        except ValidationError as err:
-            return jsonify(err.messages), 400
+        auth_token, data = kwargs['auth_token'], kwargs['data']
 
         try:
             p = Post.objects.get(id=post_id)
@@ -77,21 +70,16 @@ class CommentsView(BaseView):
 
     @token_required
     @authorization_required
+    @input_data_required
+    @deserialize(comment_schema)
     @route('/<string:post_id>/comments/<string:comment_id>', methods=['PUT'])
     def put_comment(self, post_id, comment_id, **kwargs):
-        json_data = request.get_json()
-        if not json_data:
-            return jsonify({'message': 'No input data provided'}), 400
-
-        try:
-            data = comment_schema.load(json_data)
-        except ValidationError as err:
-            return jsonify(err.messages), 400
+        data = kwargs['data']
 
         result = Comment.objects(pk=comment_id).update_one(
             content=data['content'])
 
-        if result == 0:
+        if not result:
             return jsonify({'message': 'Comment matching id does not exist'}), 404
 
         return {'result': True}, 200
@@ -102,6 +90,7 @@ class CommentsView(BaseView):
     def delete(self, post_id, comment_id, **kwargs):
 
         result = Comment.objects(pk=comment_id).delete()
+
         if not result:
             return jsonify({'message': 'Comment matching id does not exist'}), 404
 
