@@ -1,36 +1,41 @@
 import json
 from unittest import mock
 from backend.models.user import User
+import pytest
+
+
+@pytest.fixture
+def not_exist_user_id():
+    return 'not_exist_user_id'
 
 
 @mock.patch("backend.views.auth_view.AuthService.sign_in")
-def test_auth_user_not_exist(mock_sign_in, client):
+def test_auth_user_not_exist(mock_sign_in, client, default_header, not_exist_user_id):
     mock_sign_in.return_value = None, None
-
-    headers = {'Content-Type': 'application/json'}
     data = {
-        'userId': 'user_not_exist_id',
+        'userId': not_exist_user_id,
         'password': 'dummy_password',
     }
 
-    response = client.post('/auth/', data=json.dumps(data), headers=headers)
+    response = client.post(
+        '/auth/', data=json.dumps(data), headers=default_header)
 
     assert response.status_code == 404
 
 
 @mock.patch("backend.views.auth_view.AuthService.sign_in")
-def test_auth_success(mock_sign_in, client):
+def test_auth_success(mock_sign_in, client, default_header):
     u = User(user_id='test user')
     u.pk = 'pk123'
     mock_sign_in.return_value = 'dummy_token', u
 
-    headers = {'Content-Type': 'application/json'}
     data = {
         'userId': '아이디123',
         'password': '비밀번호123',
     }
 
-    response = client.post('/auth/', data=json.dumps(data), headers=headers)
+    response = client.post(
+        '/auth/', data=json.dumps(data), headers=default_header)
 
     assert response.status_code == 201
     data = json.loads(response.data)

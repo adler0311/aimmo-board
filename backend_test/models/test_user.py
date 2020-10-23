@@ -31,8 +31,7 @@ class TestUserModel(TestCase):
         assert saved_u.user_id == 'id132'
 
     def test_filter_multiple_key(self):
-        data = {'user_id': 'id132', 'password': 'pw123'}
-        u = User(**data)
+        u = self.dummy_user
         u.save()
 
         saved_u = User.objects(Q(user_id='id132') &

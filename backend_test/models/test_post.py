@@ -9,36 +9,31 @@ class TestPostModel(TestCase):
     @classmethod
     def setUpClass(cls):
         connect('mongoenginetest', host='mongomock://localhost')
+        data = {'title': '제목', 'content': '내용', 'writer': '작성자'}
+        cls.p = Post(**data)
 
     @classmethod
     def tearDownClass(cls):
         disconnect()
 
     def test_init(self):
-        data = {'title': '제목', 'content': '내용', 'writer': '작성자'}
-        p = Post(**data)
-
-        assert p is not None
-        assert p.title == data['title']
+        assert self.p is not None
+        assert self.p.title == '제목'
 
     def test_objects_get_by__id(self):
-        data = {'title': '제목', 'content': '내용', 'writer': '작성자'}
-        p = Post(**data)
+        p = self.p
         p.save()
         p = Post.objects().first()
         assert p.title == '제목'
 
-        id = p.id
-
-        result = Post.objects().get(pk=id)
+        result = Post.objects().get(pk=p.id)
 
         assert result is not None
         assert type(result) is Post
         assert p.title == '제목'
 
     def test_objects_update(self):
-        data = {'title': '제목', 'content': '내용', 'writer': '작성자'}
-        p = Post(**data)
+        p = self.p
         p.save()
         p = Post.objects().first()
         assert p.title == '제목'
@@ -50,8 +45,7 @@ class TestPostModel(TestCase):
         assert modified.title == '변경된 제목'
 
     def test_delete(self):
-        data = {'title': '제목', 'content': '내용', 'writer': '작성자'}
-        p = Post(**data)
+        p = self.p
         p.save()
         p = Post.objects().first()
         assert p.title == '제목'
@@ -59,6 +53,7 @@ class TestPostModel(TestCase):
         id = p.id
         result = Post.objects(pk=id).delete()
 
+        assert result == 1
         assert len(Post.objects) == 0
 
     def test_filter_post_user(self):
@@ -73,7 +68,7 @@ class TestPostModel(TestCase):
         assert filtered.title == '게시글'
 
     def test_datetime_field_exist(self):
-        p = Post(title="게시글")
+        p = self.p
         p.save()
 
         now = datetime.datetime.now()
@@ -85,9 +80,10 @@ class TestPostModel(TestCase):
     def test_has_writer_field(self):
         writer = User(user_id='작성자')
         writer.save()
-        p = Post(title='게시글', writer=writer)
+        p = self.p
+        p.writer = writer
         p.save()
 
         p = Post.objects.first()
-        assert p.title == '게시글'
+        assert p.title == '제목'
         assert p.writer.user_id == '작성자'
