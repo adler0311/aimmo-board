@@ -1,6 +1,5 @@
 from backend.models.subcomment import Subcomment
 from backend.models.comment import Comment
-from backend.schemas.like_schema import LikeSchema
 from mongoengine.queryset.visitor import Q
 from backend.models.like import Like
 from mongoengine.errors import DoesNotExist

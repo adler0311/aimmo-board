@@ -1,11 +1,8 @@
-from bson.objectid import ObjectId
 from backend.models.board import Board
 from functools import wraps
-from flask import request, jsonify
+from flask import jsonify
 from flask_classful import FlaskView, route
 from backend.models.post import Post
-from backend.models.user import User
-from backend.models.auth_token import AuthToken
 from backend.schemas.post_schema import PostSchema
 from mongoengine import DoesNotExist, QuerySet
 from backend.views.decorators import token_required, input_data_required

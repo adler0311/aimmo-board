@@ -1,9 +1,7 @@
 
 from mongoengine import connect, disconnect
 from mongoengine.queryset.visitor import Q
-from bson import ObjectId
 from unittest import TestCase
-from mongoengine import Document, StringField
 from backend.models.user import User
 
 

@@ -1,9 +1,7 @@
 from backend.models.like import Like
-from mongoengine.queryset.transform import update
 from backend.models.subcomment import Subcomment
 from typing import List
 from backend.models.board import Board
-import time
 from flask import Flask
 from mongoengine import connect
 from backend.models.post import Post

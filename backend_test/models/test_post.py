@@ -1,9 +1,7 @@
 from backend.models.post import Post
 from backend.models.user import User
 from mongoengine import connect, disconnect
-from bson import ObjectId
 from unittest import TestCase
-from mongoengine import Document, StringField
 import datetime
 
 

@@ -1,6 +1,5 @@
 from backend.models.board import Board
 from backend.schemas.board_schema import BoardSchema
-import pytest
 
 
 def test_dump():

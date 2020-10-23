@@ -1,8 +1,6 @@
 
 from mongoengine import connect, disconnect
-from bson import ObjectId
 from unittest import TestCase
-from mongoengine import Document, StringField
 from backend.models.auth_token import AuthToken
 from backend.models.user import User
 

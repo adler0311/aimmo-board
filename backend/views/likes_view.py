@@ -1,8 +1,7 @@
 from flask.globals import request
-from mongoengine.errors import ValidationError
 from backend.schemas.like_schema import LikeSchema
 from backend.services.like_service import LikeService
-from flask_classful import FlaskView, route
+from flask_classful import FlaskView
 from backend.views.decorators import deserialize, input_data_required, token_required
 
 

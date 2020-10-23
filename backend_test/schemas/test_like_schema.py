@@ -1,9 +1,6 @@
-from marshmallow import schema
 from mongoengine.base.fields import ObjectIdField
 from backend.schemas.like_schema import LikeSchema
 from backend.models.like import Like
-
-import pytest
 
 
 def test_init():

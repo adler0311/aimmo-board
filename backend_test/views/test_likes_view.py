@@ -19,20 +19,6 @@ def dummy_query_data():
     return {'contentId': 'dummy_content_id', 'contentType': 'post'}
 
 
-# @mock.patch("backend.views.likes_view.LikeService.get_likes")
-# def test_get_likes_of_content_not_exist(mock_get_likes, client,
-#                                         valid_token_headers, valid_token, dummy_query_data):
-
-#     mock_get_likes.return_value = False
-
-#     response = client.get(
-#         '/likes?contentId={}&contentType={}'.format(
-#             dummy_query_data['contentId'], dummy_query_data['contentType']),
-#         headers=valid_token_headers)
-
-#     assert response.status_code == 404
-
-
 @mock.patch("backend.views.likes_view.LikeService.get_likes")
 @mock.patch("backend.views.likes_view.LikeSchema.dump")
 def test_get_likes_success(mock_dump, mock_get_post_like,

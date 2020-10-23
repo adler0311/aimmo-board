@@ -1,5 +1,3 @@
-
-
 from mongoengine.errors import DoesNotExist
 from backend.models.subcomment import Subcomment
 from backend.models.comment import Comment

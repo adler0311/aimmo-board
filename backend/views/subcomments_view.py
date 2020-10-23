@@ -1,18 +1,13 @@
 from backend.services.subcomment_service import SubcommentService
 from backend.schemas.subcomment_schema import SubcommentSchema
-from flask import request, jsonify
+from flask import jsonify
 from flask_classful import FlaskView, route
-from backend.models.comment import Comment
-from backend.models.post import Post
-from backend.schemas.comment_schema import CommentSchema
 from mongoengine import DoesNotExist, QuerySet
-from bson import ObjectId
 from backend.views.decorators import input_data_required, token_required
 from functools import wraps
 from marshmallow import ValidationError
 from backend.models.subcomment import Subcomment
 
-import logging
 
 subcomments_schema = SubcommentSchema(many=True)
 subcomment_schema = SubcommentSchema()
@@ -34,23 +29,6 @@ def authorization_required(func):
         return func(*args, **kwargs)
 
     return wrapper
-
-
-# def authorization_required(func):
-#     @wraps(func)
-#     def wrapper(*args, **kwargs):
-#         comment_id = kwargs['comment_id']
-#         auth_token = kwargs['auth_token']
-
-#         qs: QuerySet = Comment.objects
-#         comment = qs.get(pk=comment_id)
-
-#         if comment.writer.id != auth_token.user.id:
-#             return jsonify({'message': 'not authorized'}), 403
-
-#         return func(*args, **kwargs)
-
-#     return wrapper
 
 
 class SubcommentsView(FlaskView):

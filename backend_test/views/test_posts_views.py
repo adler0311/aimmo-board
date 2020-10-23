@@ -2,7 +2,7 @@ import pytest
 import json
 from unittest import mock
 from pytest_flask.plugin import JSONResponse
-from bson import ObjectId
+
 from mongoengine import DoesNotExist
 from backend.models.post import Post
 from backend.models.auth_token import AuthToken

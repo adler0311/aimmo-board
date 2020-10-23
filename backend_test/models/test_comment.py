@@ -1,9 +1,8 @@
 from bson import ObjectId
 from unittest import TestCase
-from mongoengine import connect, disconnect, Document, StringField
+from mongoengine import connect, disconnect
 
 from backend.models.user import User
-from backend.models.post import Post
 from backend.models.comment import Comment
 
 import pytest

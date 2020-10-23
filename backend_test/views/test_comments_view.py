@@ -2,7 +2,6 @@ import json
 import pytest
 from unittest import mock
 from pytest_flask.plugin import JSONResponse
-from bson import ObjectId
 from mongoengine import DoesNotExist
 from typing import List
 from backend.models.user import User

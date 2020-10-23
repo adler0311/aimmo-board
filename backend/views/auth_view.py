@@ -1,5 +1,5 @@
 from backend.models.auth_token import AuthToken
-from flask import request, jsonify
+from flask import jsonify
 from flask_classful import FlaskView
 from backend.schemas.user_schema import UserSchema
 from marshmallow import ValidationError

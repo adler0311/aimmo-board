@@ -1,4 +1,3 @@
-from flask import jsonify
 from mongoengine.queryset.visitor import Q
 from backend.models.user import User
 from backend.models.auth_token import AuthToken

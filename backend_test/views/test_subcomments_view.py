@@ -1,18 +1,10 @@
 from backend.models.subcomment import Subcomment
 from unittest import mock
 from pytest_flask.plugin import JSONResponse
-from bson import ObjectId
-from mongoengine import DoesNotExist
-from typing import List
 from backend.models.user import User
 from backend.models.auth_token import AuthToken
 import json
 import pytest
-
-
-from backend.models.post import Post
-from backend.models.comment import Comment
-from backend.schemas.comment_schema import CommentSchema
 
 
 @mock.patch("backend.views.subcomments_view.Comment")
