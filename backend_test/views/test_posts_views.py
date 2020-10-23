@@ -237,7 +237,10 @@ def test_add_post_redundant_JSON_field(mock_auth_token, client, dummy_board_id):
 
 
 @mock.patch("backend.views.decorators.AuthToken")
-def test_add_post_insufficient_JSON_field(mock_auth_token, client, dummy_board_id):
+@mock.patch("backend.views.posts_view.PostService.update")
+def test_add_post_insufficient_JSON_field(mock_update, mock_auth_token, client, dummy_board_id):
+    mock_update.return_value = False
+
     valid_token = 'valid_token'
 
     headers = {'Content-Type': 'application/json',

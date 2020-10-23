@@ -18,3 +18,16 @@ class PostService:
             return True
         except:
             return False
+
+    def update(self, board_id, post_id, data) -> bool:
+        try:
+            post: Post = Post.objects.get(id=post_id)
+            post.update(board_id=board_id,
+                        title=data['title'], content=data['content'])
+            if post.board_id != board_id:
+                Board.exclude_post(post.board_id, post_id)
+                Board.add_post(board_id, post)
+
+            return True
+        except:
+            return False

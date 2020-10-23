@@ -69,6 +69,7 @@ class PostsView(BaseView):
             b = Board.objects.get(id=board_id)
 
             data['writer'] = auth_token.user
+            data['board_id'] = board_id
             p = Post(**data)
             p.save()
 
@@ -86,8 +87,7 @@ class PostsView(BaseView):
     def put(self, board_id, post_id, **kwargs):
         data = kwargs['data']
 
-        result = Post.objects(pk=post_id).update_one(
-            title=data['title'], content=data['content'])
+        result = post_service.update(board_id, post_id, data)
 
         if result is None:
             return jsonify({'message': 'Post matching id does not exist'}), 404
