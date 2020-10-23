@@ -8,8 +8,8 @@ class AuthService:
     def sign_in(self, data):
         encrypted_password = Utils.encrypt_password(data['password'])
 
-        u = User.objects(Q(user_id=data['user_id']) &
-                         Q(encrypted_password)).first()
+        u = User.get_user_by_id_and_password(
+            user_id=data['user_id'], password=encrypted_password)
 
         if u is None:
             return None, None
