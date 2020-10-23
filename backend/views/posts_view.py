@@ -1,3 +1,6 @@
+from enum import Enum
+import json
+from flask.globals import request
 from backend.views.base_view import BaseView
 from functools import wraps
 from flask import jsonify
@@ -30,12 +33,34 @@ def authorization_required(func):
     return wrapper
 
 
+class OrderType(Enum):
+    CREATED = 'created',
+    COMMENTS = 'comments',
+    LIKES = 'likes',
+
+    @classmethod
+    def has_value(cls, value):
+        return any(x for x in cls if x.value[0] == value)
+
+
 class PostsView(BaseView):
     route_base = '/'
 
     @route('/posts/', methods=['GET'])
     def index(self):
-        posts = Post.objects()
+        order_type = request.args.get('orderType')
+        keyword = request.args.get('keyword')
+
+        if order_type is not None and not OrderType.has_value(order_type):
+            return jsonify({'message': 'orderType should be one of [created, comments, likes]'}), 400
+
+        try:
+            limit = int(request.args.get('limit'))
+        except:
+            return jsonify({'message': 'limit parameter should be int type'}), 400
+
+        posts = service.get_many(order_type, limit, keyword)
+
         result = posts_schema.dump(posts)
         return {'posts': result}
 
