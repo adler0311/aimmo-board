@@ -8,10 +8,10 @@ from backend.models.user import User
 
 
 class LikeService:
-    def get_likes(self, content_id: str, content_type: str):
+    def get_many(self, content_id: str, content_type: str):
         return Like.objects(Q(content_id=content_id) & Q(content_type=content_type))
 
-    def post_like(self, data, user: User):
+    def post(self, data, user: User):
         try:
             content_id, content_type = data['content_id'], data['content_type']
             likes = Like.objects(Q(content_id=content_id) &
@@ -33,7 +33,7 @@ class LikeService:
         except DoesNotExist:
             return False
 
-    def delete_like(self, data, user: User):
+    def delete(self, data, user: User):
         try:
             content_id, content_type = data['content_id'], data['content_type']
             like = Like.objects.get(Q(content_id=content_id) &
