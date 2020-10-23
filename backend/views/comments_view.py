@@ -1,5 +1,6 @@
+from backend.views.base_view import BaseView
 from flask import request, jsonify
-from flask_classful import FlaskView, route
+from flask_classful import route
 from backend.models.comment import Comment
 from backend.models.post import Post
 from backend.schemas.comment_schema import CommentSchema
@@ -9,7 +10,6 @@ from backend.views.decorators import token_required
 from functools import wraps
 from marshmallow import ValidationError
 
-import logging
 
 comments_schema = CommentSchema(many=True)
 comment_schema = CommentSchema()
@@ -32,19 +32,14 @@ def authorization_required(func):
     return wrapper
 
 
-class CommentsView(FlaskView):
+class CommentsView(BaseView):
     route_base = '/posts/'
 
     @route('/<string:post_id>/comments/')
     def comments(self, post_id):
-        try:
-            comments = Comment.objects(post_id=post_id)
-            result = comments_schema.dump(comments)
-            return {'comments': result, 'postId': post_id}
-
-        except Exception as e:
-            logging.debug(e)
-            return 'Internal Server Error', 500
+        comments = Comment.objects(post_id=post_id)
+        result = comments_schema.dump(comments)
+        return {'comments': result, 'postId': post_id}
 
     @token_required
     @route('/<post_id>/comments/', methods=['POST'])

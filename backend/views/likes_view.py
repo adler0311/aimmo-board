@@ -1,8 +1,8 @@
+from backend.views.base_view import BaseView
 from flask.globals import request
 from backend.schemas.like_schema import LikeSchema
 from backend.services.like_service import LikeService
-from flask_classful import FlaskView
-from backend.views.decorators import deserialize, input_data_required, token_required
+from backend.views.decorators import deserialize,  input_data_required, token_required
 
 
 service = LikeService()
@@ -10,7 +10,7 @@ request_schema = LikeSchema()
 response_schema = LikeSchema(many=True)
 
 
-class LikesView(FlaskView):
+class LikesView(BaseView):
 
     def index(self, **kwargs):
         content_id = request.args.get('contentId')

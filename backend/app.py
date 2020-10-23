@@ -1,3 +1,4 @@
+from backend.views.base_view import BaseView
 from backend.models.like import Like
 from backend.models.subcomment import Subcomment
 from typing import List
@@ -96,12 +97,12 @@ def create_app():
 
     app = Flask(__name__)
 
-    PostsView.register(app)
-    CommentsView.register(app)
-    UsersView.register(app)
-    AuthView.register(app)
-    BoardsView.register(app)
-    SubcommentsView.register(app)
-    LikesView.register(app)
+    PostsView.register(app, base_class=BaseView)
+    CommentsView.register(app, base_class=BaseView)
+    UsersView.register(app, base_class=BaseView)
+    AuthView.register(app, base_class=BaseView)
+    BoardsView.register(app, base_class=BaseView)
+    SubcommentsView.register(app, base_class=BaseView)
+    LikesView.register(app, base_class=BaseView)
 
     return app

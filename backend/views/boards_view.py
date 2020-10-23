@@ -1,13 +1,11 @@
-from flask_classful import FlaskView
+from backend.views.base_view import BaseView
 from backend.models.board import Board
 from backend.schemas.board_schema import BoardSchema
-from backend.views.decorators import handle_internal_server_error
 
 boards_response = BoardSchema(many=True)
 
 
-class BoardsView(FlaskView):
-    decorators = [handle_internal_server_error]
+class BoardsView(BaseView):
 
     def index(self):
         boards = Board.objects()

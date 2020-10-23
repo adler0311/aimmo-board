@@ -1,7 +1,8 @@
+from backend.views.base_view import BaseView
 from backend.services.subcomment_service import SubcommentService
 from backend.schemas.subcomment_schema import SubcommentSchema
 from flask import jsonify
-from flask_classful import FlaskView, route
+from flask_classful import route
 from mongoengine import DoesNotExist, QuerySet
 from backend.views.decorators import input_data_required, token_required
 from functools import wraps
@@ -31,7 +32,7 @@ def authorization_required(func):
     return wrapper
 
 
-class SubcommentsView(FlaskView):
+class SubcommentsView(BaseView):
     route_base = '/comments/'
 
     @route('/<comment_id>/subcomments/', methods=['GET'])

@@ -1,6 +1,7 @@
+from backend.views.base_view import BaseView
+from unittest.mock import Base
 from backend.models.auth_token import AuthToken
 from flask import jsonify
-from flask_classful import FlaskView
 from backend.schemas.user_schema import UserSchema
 from marshmallow import ValidationError
 from backend.services.auth_service import AuthService
@@ -11,7 +12,7 @@ user_response_schema = UserSchema(only=['user_id', '_id'])
 auth_service = AuthService()
 
 
-class AuthView(FlaskView):
+class AuthView(BaseView):
 
     @input_data_required
     def post(self, **kwargs):

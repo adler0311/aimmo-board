@@ -1,13 +1,13 @@
+from backend.views.base_view import BaseView
 from backend.models.board import Board
 from functools import wraps
 from flask import jsonify
-from flask_classful import FlaskView, route
+from flask_classful import route
 from backend.models.post import Post
 from backend.schemas.post_schema import PostSchema
 from mongoengine import DoesNotExist, QuerySet
 from backend.views.decorators import token_required, input_data_required
 from marshmallow import ValidationError
-import logging
 from backend.services.post_service import PostService
 
 posts_schema = PostSchema(many=True)
@@ -32,19 +32,14 @@ def authorization_required(func):
     return wrapper
 
 
-class PostsView(FlaskView):
+class PostsView(BaseView):
     route_base = '/'
 
     @route('/posts/', methods=['GET'])
     def index(self):
-        try:
-            posts = Post.objects()
-            result = posts_schema.dump(posts)
-            return {'posts': result}
-
-        except Exception as e:
-            logging.debug(e)
-            return 'Internal Server Error', 500
+        posts = Post.objects()
+        result = posts_schema.dump(posts)
+        return {'posts': result}
 
     @route('/boards/<board_id>/posts/<post_id>/', methods=['GET'])
     def get(self, board_id, post_id):
