@@ -1,14 +1,9 @@
+from backend.models.content import Content
 from backend.models.subcomment import Subcomment
-from mongoengine import Document, StringField, ReferenceField, ObjectIdField, DateTimeField
-from mongoengine.fields import IntField, ListField
-from backend.models.user import User
-import datetime
+from mongoengine import ReferenceField, ObjectIdField
+from mongoengine.fields import ListField
 
 
-class Comment(Document):
-    content = StringField()
-    writer = ReferenceField(User)
+class Comment(Content):
     post_id = ObjectIdField('postId')
-    created = DateTimeField(default=datetime.datetime.now)
     subcomments = ListField(ReferenceField(Subcomment))
-    likes = IntField()

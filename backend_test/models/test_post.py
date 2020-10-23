@@ -83,3 +83,13 @@ class TestPostModel(TestCase):
 
         assert p.created is not None
         assert diff_in_minute < 1
+
+    def test_has_writer_field(self):
+        writer = User(user_id='작성자')
+        writer.save()
+        p = Post(title='게시글', writer=writer)
+        p.save()
+
+        p = Post.objects.first()
+        assert p.title == '게시글'
+        assert p.writer.user_id == '작성자'
