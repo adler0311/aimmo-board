@@ -6,6 +6,14 @@ from bson import ObjectId
 
 
 class PostService:
+
+    def get(self, post_id):
+        try:
+            return True, Post.objects.get(id=post_id)
+
+        except DoesNotExist:
+            return False, None
+
     def post(self, board_id, data, user: User) -> bool:
         try:
             b = Board.objects.get(id=board_id)

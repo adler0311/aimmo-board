@@ -41,12 +41,12 @@ class PostsView(BaseView):
 
     @route('/boards/<board_id>/posts/<post_id>/', methods=['GET'])
     def get(self, board_id, post_id):
-        try:
-            post = Post.objects.get(id=post_id)
-            result = post_schema.dump(post)
-            return {'data': result}, 200
-        except DoesNotExist as e:
+        result, post = service.get(post_id)
+        if not result:
             return jsonify({'message': 'id does not exist'}), 404
+
+        result = post_schema.dump(post)
+        return {'data': result}, 200
 
     @route('/boards/<string:board_id>/posts/', methods=['GET'])
     def get_board_posts(self, board_id):
@@ -80,7 +80,7 @@ class PostsView(BaseView):
 
         result = service.update(board_id, post_id, data)
 
-        if result is None:
+        if not result:
             return jsonify({'message': 'id does not exist'}), 404
 
         return {'result': True}, 200
