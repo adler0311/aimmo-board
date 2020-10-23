@@ -1,5 +1,9 @@
+from marshmallow.fields import Boolean
+from mongoengine import queryset
+from mongoengine.fields import BooleanField
 from mongoengine.queryset.manager import queryset_manager
 from mongoengine.queryset.queryset import QuerySet, BaseQuerySet
+from mongoengine.queryset.transform import query
 from backend.models.content import Content
 from mongoengine import StringField, ListField, ReferenceField
 from mongoengine.base.fields import ObjectIdField
@@ -10,13 +14,15 @@ class Post(Content):
     title = StringField()
     board_id = ObjectIdField('boardId')
     comments = ListField(ReferenceField(Comment))
+    is_notice = BooleanField(default=False, db_field='isNotice')
 
     meta = {'indexes': [
         {'fields': ['$title', '$content']}
     ]}
 
     @queryset_manager
-    def get_posts_with_parameters(doc_cls, queryset: QuerySet, order_type, limit, keyword):
+    def get_posts_with_parameters(doc_cls, queryset: QuerySet, order_type,
+                                  limit, keyword, board_id, is_notice):
         if order_type is None:
             order_type = 'created'
         if limit is None:
@@ -24,7 +30,13 @@ class Post(Content):
 
         result: BaseQuerySet = queryset.order_by('-' + order_type)
 
+        if board_id is not None:
+            result = result.filter(board_id=board_id)
+
         if keyword is not None:
             result = result.search_text(keyword)
+
+        if is_notice is not None:
+            result = result.filter(is_notice=is_notice)
 
         return result[:limit]

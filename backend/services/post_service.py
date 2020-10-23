@@ -6,9 +6,8 @@ from bson import ObjectId
 
 
 class PostService:
-    def get_many(self, order_type, limit, keyword):
-
-        return Post.get_posts_with_parameters(order_type, limit, keyword)
+    def get_many(self, order_type=None, limit=None, keyword=None, board_id=None, is_notice=None):
+        return Post.get_posts_with_parameters(order_type, limit, keyword, board_id, is_notice)
 
     def get(self, post_id):
         try:

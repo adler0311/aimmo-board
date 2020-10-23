@@ -86,6 +86,16 @@ def initiate_collection_for_test():
     saved_search_p = search_p.save()
     posts.append(saved_search_p)
 
+    title = "공지 글"
+    content = "공지 글 내용"
+    writer = User(user_id='관리자')
+    writer.save()
+
+    search_p = Post(title=title, content=content,
+                    writer=writer, is_notice=True)
+    saved_search_p = search_p.save()
+    posts.append(saved_search_p)
+
     posts.append(post_with_comment)
 
     boards = [Board(title='게시판 {}'.format(i+1)) for i in range(3)]

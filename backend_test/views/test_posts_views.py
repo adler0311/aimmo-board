@@ -49,8 +49,9 @@ def dummy_data():
 
 
 @mock.patch("backend.views.posts_view.Post")
-def test_get_posts(mock_post, client, posts):
-    mock_post.objects.return_value = posts
+@mock.patch("backend.views.posts_view.PostService.get_many")
+def test_get_posts(mock_get_many, mock_post, client, posts):
+    mock_get_many.return_value = posts
 
     http_response: JSONResponse = client.get('/posts/')
 
@@ -245,7 +246,8 @@ def test_put_not_authorized(mock_post, mock_auth_token, client,
 
 @mock.patch("backend.views.decorators.AuthToken")
 @mock.patch("backend.views.posts_view.Post")
-def test_put_is_authroized(mock_post, mock_auth_token, client,
+@mock.patch("backend.views.posts_view.PostService.update")
+def test_put_is_authroized(mock_update, mock_post, mock_auth_token, client,
                            dummy_board_id, valid_token, valid_token_header, dummy_data):
     post_pk = 'pf85469378ebc3de6b8cf154'
 
@@ -257,8 +259,8 @@ def test_put_is_authroized(mock_post, mock_auth_token, client,
     mock_auth_token.objects.get.return_value = AuthToken(
         token=valid_token, user=writer)
 
-    objects = mock_post.objects
-    objects.get.return_value = post
+    mock_post.objects.get.return_value = post
+    mock_update.return_value = post
 
     response = client.put(
         '/boards/{}/posts/{}/'.format(dummy_board_id, post_pk), data=json.dumps(dummy_data), headers=valid_token_header)
@@ -268,10 +270,11 @@ def test_put_is_authroized(mock_post, mock_auth_token, client,
 
 @mock.patch("backend.views.posts_view.Post")
 @mock.patch("backend.views.posts_view.PostSchema.dump")
-def test_board_posts_success(mock_dump, mock_post, client,
+@mock.patch("backend.views.posts_view.PostService.get_many")
+def test_board_posts_success(mock_get_many, mock_dump, mock_post, client,
                              posts, dummy_board_id):
     mock_dump.return_value = {}
-    mock_post.objects.return_value = posts
+    mock_get_many.return_value = posts
 
     response: JSONResponse = client.get(
         '/boards/{}/posts/'.format(dummy_board_id))
