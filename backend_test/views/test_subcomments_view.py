@@ -7,9 +7,8 @@ import json
 import pytest
 
 
-@mock.patch("backend.views.subcomments_view.Comment")
 @mock.patch("backend.views.subcomments_view.Subcomment")
-def test_get_subcomments(mock_subcomment, mock_comment, client):
+def test_get_subcomments(mock_subcomment, client):
     dummy_comment_id = 'aaaa'
 
     response: JSONResponse = client.get(

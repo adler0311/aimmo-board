@@ -1,3 +1,4 @@
+from backend.models.post import Post
 import pytest
 from unittest import mock
 from backend.models.auth_token import AuthToken
@@ -22,14 +23,13 @@ def dummy_query_data():
 @mock.patch("backend.views.likes_view.LikeService.get_likes")
 @mock.patch("backend.views.likes_view.LikeSchema.dump")
 def test_get_likes_success(mock_dump, mock_get_post_like,
-                           client, valid_token,
-                           valid_token_headers, dummy_query_data):
+                           client, valid_token_headers, dummy_query_data):
 
-    mock_get_post_like.return_value = True
+    mock_get_post_like.return_value = [Post()]
     mock_dump.return_value = True
 
     response = client.get(
-        '/likes?contentId={}&contentType={}'.format(
+        '/likes/?contentId={}&contentType={}'.format(
             dummy_query_data['contentId'], dummy_query_data['contentType']),
         headers=valid_token_headers)
 

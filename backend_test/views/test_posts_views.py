@@ -103,20 +103,6 @@ def test_add_post_not_authenticated(mock_auth_token, mock_post, client, dummy_bo
 
 
 @mock.patch("backend.views.posts_view.Post")
-def test_get_post(mock_post, client, posts):
-    p = posts[0]
-    mock_post.objects.get.return_value = p
-
-    http_response: JSONResponse = client.get('/posts/{}/'.format(p.pk))
-
-    assert http_response.status_code == 200
-    schema = PostSchema()
-    result = {'data': schema.dump(p)}
-    data = json.loads(http_response.data)
-    assert result == data
-
-
-@mock.patch("backend.views.posts_view.Post")
 def test_get_post_which_not_exist_id(mock_post, client, posts):
     mock_post.objects.get.side_effect = DoesNotExist()
     invalid_object_id = '5f85469378ebc3de6b8cf152'
