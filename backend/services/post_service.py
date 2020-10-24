@@ -26,7 +26,7 @@ class PostService:
             p = Post(**data)
             p.save()
 
-            Board.objects(id=board_id).update_one(posts=[p] + b.posts)
+            Board.add_post(board_id, p)
             return True
         except DoesNotExist:
             return False
@@ -39,8 +39,7 @@ class PostService:
 
         try:
             b = Board.objects.get(id=board_id)
-            Board.objects(id=b.id).update_one(posts=list(
-                filter(lambda p: p.id != ObjectId(post_id), b.posts)))
+            Board.exclude_post(b.id, post_id)
 
             return True
         except:
