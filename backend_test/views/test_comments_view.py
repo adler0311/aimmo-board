@@ -8,8 +8,6 @@ from typing import List
 from backend.models.user import User
 from backend.models.auth_token import AuthToken
 
-
-from backend.models.post import Post
 from backend.models.comment import Comment
 from backend.schemas.comment_schema import CommentSchema
 
@@ -127,8 +125,8 @@ def test_put_comment_not_authenticated(mock_auth_token, client,
 
 
 @mock.patch("backend.views.decorators.AuthToken")
-@mock.patch("backend.views.comments_view.Comment")
-def test_put_comment_not_authorized(mock_comment, mock_auth_token, client,
+@mock.patch("backend.views.comments_view.CommentService.is_writer")
+def test_put_comment_not_authorized(mock_is_writer,  mock_auth_token, client,
                                     comments, dummy_post_id, not_writer_token_header):
     c = comments[0]
 
@@ -137,7 +135,7 @@ def test_put_comment_not_authorized(mock_comment, mock_auth_token, client,
 
     mock_auth_token.objects.get.return_value = AuthToken(user=not_writer)
 
-    mock_comment.objects.get.return_value = c
+    mock_is_writer.return_value = False
 
     data = {'content': '업데이트할 댓글'}
 
@@ -150,18 +148,19 @@ def test_put_comment_not_authorized(mock_comment, mock_auth_token, client,
 
 
 @mock.patch("backend.views.decorators.AuthToken")
-@mock.patch("backend.views.comments_view.Comment")
 @mock.patch("backend.views.comments_view.CommentSchema.load")
-def test_put_comment_is_success(mock_load, mock_comment, mock_auth_token, client,
+@mock.patch("backend.views.comments_view.CommentService.update")
+@mock.patch("backend.views.comments_view.CommentService.is_writer")
+def test_put_comment_is_success(mock_is_writer, mock_update, mock_load, mock_auth_token, client,
                                 comments, dummy_post_id, writer_token_header):
     c = comments[0]
 
     writer = c.writer
 
     data = {'content': '업데이트할 댓글'}
-
     mock_auth_token.objects.get.return_value = AuthToken(user=writer)
-    mock_comment.objects.get.return_value = c
+    mock_is_writer.return_value = True
+    mock_update.return_value = c
     mock_load.retun_value = data
 
     response = client.put(
@@ -187,17 +186,16 @@ def test_delete_comment_not_authenticated(mock_auth_token, client,
     assert response.status_code == 401
 
 
-@mock.patch("backend.views.decorators.AuthToken")
-@mock.patch("backend.views.comments_view.Comment")
-def test_delete_comment_not_authorized(mock_comment, mock_auth_token, client,
+@mock.patch("backend.views.comments_view.CommentService.is_writer")
+@mock.patch("backend.views.decorators.AuthService.get_auth_token")
+def test_delete_comment_not_authorized(mock_get_auth_token, mock_is_writer, client,
                                        comments, dummy_post_id, not_writer_token_header):
     c = comments[0]
 
     not_writer = User()
     not_writer.pk = 'nw85469378ebc3de6b8cf156'
-    mock_auth_token.objects.get.return_value = AuthToken(user=not_writer)
-
-    mock_comment.objects.get.return_value = c
+    mock_get_auth_token.return_value = AuthToken(user=not_writer)
+    mock_is_writer.return_value = False
 
     response = client.delete(
         '/posts/{post_id}/comments/{comment_id}/'.format(
@@ -207,17 +205,15 @@ def test_delete_comment_not_authorized(mock_comment, mock_auth_token, client,
     assert response.status_code == 403
 
 
-@mock.patch("backend.views.decorators.AuthToken")
-@mock.patch("backend.views.comments_view.Comment")
+@mock.patch("backend.views.comments_view.CommentService.is_writer")
+@mock.patch("backend.views.decorators.AuthService.get_auth_token")
 @mock.patch("backend.views.comments_view.CommentService.delete")
-def test_delete_comment_is_success(mock_delete, mock_comment, mock_auth_token, client,
+def test_delete_comment_is_success(mock_delete, mock_get_auth_token, mock_is_writer, client,
                                    comments: List[Comment], dummy_post_id, writer_token_header):
     c = comments[0]
 
-    writer = c.writer
-    mock_auth_token.objects.get.return_value = AuthToken(user=writer)
-
-    mock_comment.objects.get.return_value = c
+    mock_get_auth_token.return_value = AuthToken(user=c.writer)
+    mock_is_writer.return_value = True
     mock_delete.return_value = True
 
     response = client.delete(

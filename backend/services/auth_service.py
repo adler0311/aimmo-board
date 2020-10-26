@@ -19,3 +19,6 @@ class AuthService:
         a.save()
 
         return token, u
+
+    def get_auth_token(self, token):
+        return AuthToken.objects.get(token=token)

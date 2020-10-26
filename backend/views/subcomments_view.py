@@ -1,3 +1,4 @@
+from re import sub
 from backend.views.base_view import BaseView
 from backend.services.subcomment_service import SubcommentService
 from backend.schemas.subcomment_schema import SubcommentSchema
@@ -20,10 +21,7 @@ def authorization_required(func):
         subcomment_id = kwargs['subcomment_id']
         auth_token = kwargs['auth_token']
 
-        qs: QuerySet = Subcomment.objects
-        subcomment = qs.get(id=subcomment_id)
-
-        if subcomment.writer.id != auth_token.user.id:
+        if not service.is_writer(subcomment_id, auth_token.user.id):
             return jsonify({'message': 'not authorized'}), 403
 
         return func(*args, **kwargs)
@@ -36,8 +34,9 @@ class SubcommentsView(BaseView):
 
     @route('/<comment_id>/subcomments/', methods=['GET'])
     def comments(self, comment_id):
-        subcomments = Subcomment.objects(parent_id=comment_id)
+        subcomments = service.get_many(comment_id)
         result = subcomments_schema.dump(subcomments)
+
         return {'comments': result, 'commentId': comment_id}
 
     @token_required
@@ -57,7 +56,8 @@ class SubcommentsView(BaseView):
     @route('/<comment_id>/subcomments/<subcomment_id>', methods=['GET'])
     def get(self, comment_id, subcomment_id):
         try:
-            subcomment = Subcomment.objects.get(id=subcomment_id)
+            subcomment = service.get_one(subcomment_id)
+
             result = subcomment_schema.dump(subcomment)
             return {'subcomment': result}, 200
         except DoesNotExist:
@@ -71,8 +71,7 @@ class SubcommentsView(BaseView):
     def put_subcomment(self, comment_id, subcomment_id, **kwargs):
         data = kwargs['data']
 
-        result = Subcomment.objects(id=subcomment_id).update_one(
-            content=data['content'])
+        result = service.update(subcomment_id, data['content'])
 
         if not result:
             return jsonify({'message': 'Comment matching id does not exist'}), 404

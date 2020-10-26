@@ -30,3 +30,18 @@ class SubcommentService:
             return True
         except DoesNotExist:
             return False
+
+    def update(self, subcomment_id, content):
+        return Subcomment.objects(id=subcomment_id).update_one(
+            content=content)
+
+    def get_one(self, subcomment_id):
+        return Subcomment.objects.get(id=subcomment_id)
+
+    def get_many(self, comment_id):
+        return Subcomment.objects(parent_id=comment_id)
+
+    def is_writer(self, subcomment_id, auth_token_user_id):
+        subcomment = Subcomment.objects.get(id=subcomment_id)
+
+        return subcomment.writer.id == auth_token_user_id

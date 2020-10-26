@@ -18,9 +18,9 @@ def dummy_subcomment_id():
     return 'bf85469378ebc3de6b8cf156'
 
 
-@mock.patch("backend.views.subcomments_view.Subcomment")
-def test_get_subcomments(mock_subcomment, client, dummy_comment_id):
-    dummy_comment_id = 'aaaa'
+@mock.patch("backend.views.subcomments_view.SubcommentService.get_many")
+def test_get_subcomments(mock_get_many, client, dummy_comment_id):
+    mock_get_many.return_value = []
 
     response: JSONResponse = client.get(
         '/comments/{}/subcomments/'.format(dummy_comment_id))
@@ -71,7 +71,8 @@ def test_put_subcomment_not_authorized(mock_subcomment, mock_auth_token, client,
 @mock.patch("backend.views.decorators.AuthToken")
 @mock.patch("backend.views.subcomments_view.Subcomment")
 @mock.patch("backend.views.subcomments_view.SubcommentSchema.load")
-def test_put_subcomment_is_success(mock_load, mock_subcomment, mock_auth_token, client,
+@mock.patch("backend.views.subcomments_view.SubcommentService.update")
+def test_put_subcomment_is_success(mock_update, mock_load, mock_subcomment, mock_auth_token, client,
                                    writer_token_header, dummy_comment_id, dummy_subcomment_id):
 
     writer = User(user_id='대댓글 작성자')
@@ -79,6 +80,7 @@ def test_put_subcomment_is_success(mock_load, mock_subcomment, mock_auth_token, 
 
     data = {'content': '업데이트할 대댓글'}
 
+    mock_update.return_value = 1
     mock_subcomment.objects.get.return_value = Subcomment(writer=writer)
     mock_auth_token.objects.get.return_value = AuthToken(user=writer)
     mock_load.return_value = data

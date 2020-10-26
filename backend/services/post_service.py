@@ -9,7 +9,7 @@ class PostService:
     def get_many(self, order_type=None, limit=None, keyword=None, board_id=None, is_notice=None):
         return Post.get_posts_with_parameters(order_type, limit, keyword, board_id, is_notice)
 
-    def get(self, post_id):
+    def get_one(self, post_id):
         try:
             return True, Post.objects.get(id=post_id)
 
@@ -57,3 +57,7 @@ class PostService:
             return True
         except:
             return False
+
+    def is_writer(self, post_id, auth_token_user_id):
+        post = Post.objects.get(id=post_id)
+        return post.writer.id == auth_token_user_id

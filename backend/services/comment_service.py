@@ -1,6 +1,7 @@
 from typing import Tuple
 from bson.objectid import ObjectId
 from mongoengine.errors import DoesNotExist
+from mongoengine.queryset.queryset import QuerySet
 from backend.models.comment import Comment
 from backend.models.post import Post
 from backend.models.user import User
@@ -36,3 +37,12 @@ class CommentService:
             return True
         except DoesNotExist:
             return False
+
+    def update(self, comment_id, data):
+        return Comment.objects(id=comment_id).update_one(
+            content=data['content'])
+
+    def is_writer(self, comment_id, auth_token_user_id):
+        comment = Comment.objects.get(id=comment_id)
+
+        return comment.writer.id == auth_token_user_id

@@ -20,10 +20,7 @@ def authorization_required(func):
         comment_id = kwargs['comment_id']
         auth_token = kwargs['auth_token']
 
-        qs: QuerySet = Comment.objects
-        comment = qs.get(id=comment_id)
-
-        if comment.writer.id != auth_token.user.id:
+        if not service.is_writer(comment_id, auth_token.user.id):
             return jsonify({'message': 'not authorized'}), 403
 
         return func(*args, **kwargs)
@@ -71,8 +68,7 @@ class CommentsView(BaseView):
     def put_comment(self, post_id, comment_id, **kwargs):
         data = kwargs['data']
 
-        result = Comment.objects(id=comment_id).update_one(
-            content=data['content'])
+        result = service.update(comment_id, data)
 
         if not result:
             return jsonify({'message': 'id does not exist'}), 404

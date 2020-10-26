@@ -26,10 +26,10 @@ def boards_json():
             ]
 
 
-@mock.patch("backend.views.boards_view.Board")
 @mock.patch("backend.views.boards_view.BoardSchema.dump")
-def test_get_boards(mock_dump, mock_board, client, boards, boards_json):
-    mock_board.objects.return_value = boards
+@mock.patch("backend.views.boards_view.BoardService.get_many")
+def test_get_boards(mock_get_many, mock_dump, client, boards, boards_json):
+    mock_get_many.return_value = boards
     mock_dump.return_value = boards_json
 
     http_response: JSONResponse = client.get('/boards/')
@@ -42,9 +42,9 @@ def test_get_boards(mock_dump, mock_board, client, boards, boards_json):
     assert result == data
 
 
-@mock.patch("backend.views.boards_view.Board")
-def test_get_boards_internal_server_error(mock_board, client):
-    mock_board.objects.side_effect = RuntimeError()
+@mock.patch("backend.views.boards_view.BoardService.get_many")
+def test_get_boards_internal_server_error(mock_get_many,  client):
+    mock_get_many.side_effect = RuntimeError()
     response: JSONResponse = client.get('/boards/')
 
     assert response.status_code == 500

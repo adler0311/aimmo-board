@@ -23,10 +23,7 @@ def authorization_required(func):
         post_id = kwargs['post_id']
         auth_token = kwargs['auth_token']
 
-        qs: QuerySet = Post.objects
-        post = qs.get(id=post_id)
-
-        if post.writer.id != auth_token.user.id:
+        if not service.is_writer(post_id, auth_token.user.id):
             return jsonify({'message': 'not authorized'}), 403
 
         return func(*args, **kwargs)
@@ -88,7 +85,7 @@ class PostsView(BaseView):
 
     @route('/boards/<board_id>/posts/<post_id>/', methods=['GET'])
     def get(self, board_id, post_id):
-        result, post = service.get(post_id)
+        result, post = service.get_one(post_id)
         if not result:
             return jsonify({'message': 'id does not exist'}), 404
 
