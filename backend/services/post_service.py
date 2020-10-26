@@ -2,7 +2,6 @@ from mongoengine.errors import DoesNotExist
 from backend.models.user import User
 from backend.models.post import Post
 from backend.models.board import Board
-from bson import ObjectId
 
 
 class PostService:

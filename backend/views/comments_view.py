@@ -4,7 +4,6 @@ from flask import jsonify
 from flask_classful import route
 from backend.models.comment import Comment
 from backend.schemas.comment_schema import CommentSchema
-from mongoengine import QuerySet
 from backend.views.decorators import deserialize, input_data_required, token_required
 from functools import wraps
 

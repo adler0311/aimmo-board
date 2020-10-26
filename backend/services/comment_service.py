@@ -1,7 +1,6 @@
 from typing import Tuple
 from bson.objectid import ObjectId
 from mongoengine.errors import DoesNotExist
-from mongoengine.queryset.queryset import QuerySet
 from backend.models.comment import Comment
 from backend.models.post import Post
 from backend.models.user import User

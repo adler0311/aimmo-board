@@ -5,9 +5,8 @@ from backend.views.base_view import BaseView
 from functools import wraps
 from flask import jsonify
 from flask_classful import route
-from backend.models.post import Post
 from backend.schemas.post_schema import PostSchema
-from mongoengine import DoesNotExist, QuerySet
+from mongoengine import DoesNotExist
 from backend.views.decorators import deserialize, token_required, input_data_required
 from backend.services.post_service import PostService
 from distutils.util import strtobool

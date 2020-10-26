@@ -4,10 +4,9 @@ from backend.services.subcomment_service import SubcommentService
 from backend.schemas.subcomment_schema import SubcommentSchema
 from flask import jsonify
 from flask_classful import route
-from mongoengine import DoesNotExist, QuerySet
+from mongoengine import DoesNotExist
 from backend.views.decorators import deserialize, input_data_required, token_required
 from functools import wraps
-from backend.models.subcomment import Subcomment
 
 
 subcomments_schema = SubcommentSchema(many=True)

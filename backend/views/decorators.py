@@ -1,7 +1,6 @@
 from backend.services.auth_service import AuthService
 from flask import request, jsonify
 from marshmallow.exceptions import ValidationError
-from backend.models.auth_token import AuthToken
 from mongoengine import DoesNotExist
 from functools import wraps
 import logging
