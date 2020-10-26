@@ -11,3 +11,10 @@ class PostSchema(Schema):
     comments = fields.Nested(CommentSchema(many=True))
     created = fields.Str()
     likes = fields.Number()
+
+
+class PostLoadSchema(Schema):
+    order_type = fields.String(default='created')
+    keyword = fields.String()
+    limit = fields.Int(default=20)
+    is_notice = fields.Bool(default=False)

@@ -4,6 +4,19 @@ from backend.models.post import Post
 from backend.models.board import Board
 
 
+class PostLoadService:
+    @classmethod
+    def get_many(cls, order_type=None, limit=None, keyword=None, board_id=None, is_notice=None):
+        return Post.get_posts_with_parameters(order_type, limit, keyword, board_id, is_notice)
+
+    @classmethod
+    def get_one(cls, post_id):
+        try:
+            return True, Post.objects.get(id=post_id)
+        except DoesNotExist:
+            return False, None
+
+
 class PostService:
     def get_many(self, order_type=None, limit=None, keyword=None, board_id=None, is_notice=None):
         return Post.get_posts_with_parameters(order_type, limit, keyword, board_id, is_notice)

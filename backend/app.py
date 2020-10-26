@@ -117,12 +117,14 @@ def create_app():
 
     app = Flask(__name__)
 
-    PostsView.register(app, base_class=BaseView)
-    CommentsView.register(app, base_class=BaseView)
+    BoardsView.register(app, route_base='/boards', base_class=BaseView)
+    PostsView.register(app, route_base='/boards/<string:board_id>/posts', base_class=BaseView)
+    CommentsView.register(app, route_base='/boards/<string:board_id>/posts/<string:post_id>/comments', base_class=BaseView)
+    SubcommentsView.register(app, route_base='/boards/<string:board_id>/posts/<string:post_id>/comments/<string:comment_id>/sub-comments', base_class=BaseView)
+
     UsersView.register(app, base_class=BaseView)
     AuthView.register(app, base_class=BaseView)
-    BoardsView.register(app, base_class=BaseView)
-    SubcommentsView.register(app, base_class=BaseView)
+
     LikesView.register(app, base_class=BaseView)
 
     return app

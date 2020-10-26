@@ -1,4 +1,4 @@
-from mongoengine.fields import BooleanField
+from mongoengine.fields import BooleanField, DateField
 from mongoengine.queryset.manager import queryset_manager
 from mongoengine.queryset.queryset import QuerySet, BaseQuerySet
 from backend.models.content import Content
@@ -18,13 +18,7 @@ class Post(Content):
     ]}
 
     @queryset_manager
-    def get_posts_with_parameters(doc_cls, queryset: QuerySet, order_type,
-                                  limit, keyword, board_id, is_notice):
-        if order_type is None:
-            order_type = 'created'
-        if limit is None:
-            limit = 10
-
+    def get_posts_with_parameters(doc_cls, queryset: QuerySet, order_type, limit, keyword, board_id, is_notice):
         result: BaseQuerySet = queryset.order_by('-' + order_type)
 
         if board_id is not None:
@@ -37,3 +31,4 @@ class Post(Content):
             result = result.filter(is_notice=is_notice)
 
         return result[:limit]
+

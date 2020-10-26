@@ -1,14 +1,16 @@
 from enum import Enum
 import json
 from flask.globals import request
+from flask_apispec import marshal_with, use_kwargs
+
 from backend.views.base_view import BaseView
 from functools import wraps
 from flask import jsonify
 from flask_classful import route
-from backend.schemas.post_schema import PostSchema
+from backend.schemas.post_schema import PostLoadSchema, PostSchema
 from mongoengine import DoesNotExist
 from backend.views.decorators import deserialize, token_required, input_data_required
-from backend.services.post_service import PostService
+from backend.services.post_service import PostLoadService, PostService
 from distutils.util import strtobool
 
 posts_schema = PostSchema(many=True)
@@ -68,10 +70,8 @@ class OrderType(Enum):
 
 
 class PostsView(BaseView):
-    route_base = '/'
-
     @handle_parameters
-    @route('/posts/', methods=['GET'])
+    @route('/', methods=['GET'])
     def index(self, **kwargs):
         order_type, keyword, limit, is_notice = kwargs['order_type'], kwargs[
             'keyword'], kwargs['limit'], kwargs['is_notice']
@@ -82,7 +82,7 @@ class PostsView(BaseView):
         result = posts_schema.dump(posts)
         return {'posts': result}
 
-    @route('/boards/<board_id>/posts/<post_id>/', methods=['GET'])
+    @route('/<string:post_id>', methods=['GET'])
     def get(self, board_id, post_id):
         result, post = service.get_one(post_id)
         if not result:
@@ -91,16 +91,12 @@ class PostsView(BaseView):
         result = post_schema.dump(post)
         return {'data': result}, 200
 
+    @use_kwargs(PostLoadSchema, location=['query'])
     @route('/boards/<string:board_id>/posts/', methods=['GET'])
-    def get_board_posts(self, board_id):
-        is_notice = request.args.get('isNotice')
-
-        try:
-            posts = service.get_many(board_id=board_id, is_notice=is_notice)
-            result = posts_schema.dump(posts)
-            return {'posts': result, 'boardId': board_id}, 200
-        except DoesNotExist as e:
-            return jsonify({'message': 'id does not exist'}), 404
+    @marshal_with(PostSchema(only=['id'], many=True), code=200)
+    def get_board_posts(self, board_id, order_type, keyword, limit, is_notice):
+        posts = PostLoadService.get_many(board_id=board_id, order_type=order_type, limit=limit, keyword=keyword, is_notice=is_notice)
+        return posts, 200
 
     @token_required
     @input_data_required
