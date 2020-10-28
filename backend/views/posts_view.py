@@ -7,9 +7,8 @@ from flask import jsonify
 from flask_classful import route
 from backend.schemas.post_schema import PostLoadSchema, PostSchema, PostBodyLoadSchema
 from backend.views.decorators import token_required
-from backend.services.post_service import PostLoadService, PostService
-
-service = PostService()
+from backend.services.post_service import PostLoadService, PostSaveService, PostModifyService, PostRemoveService, \
+    PostCheckService
 
 
 def authorization_required(func):
@@ -18,7 +17,7 @@ def authorization_required(func):
         post_id = kwargs['post_id']
         auth_token = kwargs['auth_token']
 
-        if not service.is_writer(post_id, auth_token.user.id):
+        if not PostCheckService.is_writer(post_id, auth_token.user.id):
             return jsonify({'message': 'not authorized'}), 403
 
         return func(*args, **kwargs)
@@ -71,7 +70,7 @@ class PostsView(BaseView):
     @use_kwargs(PostBodyLoadSchema)
     @route('/', methods=['POST'])
     def post(self, board_id, auth_token, title, content):
-        result = service.post(board_id, title, content, auth_token.user)
+        result = PostSaveService.post(board_id, title, content, auth_token.user)
 
         if not result:
             return {'message': 'id does not exist'}, 404
@@ -83,7 +82,7 @@ class PostsView(BaseView):
     @use_kwargs(PostBodyLoadSchema)
     @route('/<post_id>', methods=['PUT'])
     def put(self, board_id, post_id, title, content, **kwargs):
-        result = service.update(board_id, post_id, title, content)
+        result = PostModifyService.update(board_id, post_id, title, content)
 
         if not result:
             return {'message': 'id does not exist'}, 404
@@ -94,7 +93,7 @@ class PostsView(BaseView):
     @authorization_required
     @route('/<post_id>', methods=['DELETE'])
     def delete(self, board_id, post_id, **kwargs):
-        result = service.delete(board_id, post_id)
+        result = PostRemoveService.delete(board_id, post_id)
 
         if not result:
             return {'message': 'id does not exist'}, 404

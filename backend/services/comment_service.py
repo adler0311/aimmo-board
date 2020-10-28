@@ -6,11 +6,22 @@ from backend.models.post import Post
 from backend.models.user import User
 
 
-class CommentService:
-    def post(self, post_id, user: User, content):
+class CommentLoadService:
+    @staticmethod
+    def get_one(cls, comment_id):
+        try:
+            comment = Comment.objects.get(id=comment_id)
+            return comment, True
+
+        except DoesNotExist:
+            return None, False
+
+
+class CommentSaveService:
+    @staticmethod
+    def post(cls, post_id, user: User, content):
         try:
             p = Post.objects.get(id=post_id)
-
             c = Comment(content=content, post_id=post_id, writer=user)
             c.save()
 
@@ -19,29 +30,28 @@ class CommentService:
         except DoesNotExist:
             return False
 
-    def get(self, comment_id) -> Tuple[Comment, bool]:
-        try:
-            comment = Comment.objects.get(id=comment_id)
-            return comment, True
 
-        except DoesNotExist:
-            return None, False
+class CommentModifyService:
+    @staticmethod
+    def update(self, comment_id, data):
+        return Comment.objects(id=comment_id).update_one(content=data['content'])
 
-    def delete(self, post_id, comment_id):
+
+class CommentRemoveService:
+    @staticmethod
+    def delete(cls, post_id, comment_id):
         try:
             Comment.objects(id=comment_id).delete()
             p = Post.objects.get(id=post_id)
-            Post.objects(id=p.id).update_one(comments=list(
-                filter(lambda c: c.id != ObjectId(comment_id), p.comments)))
+            Post.objects(id=p.id).update_one(comments=list(filter(lambda c: c.id != ObjectId(comment_id), p.comments)))
             return True
         except DoesNotExist:
             return False
 
-    def update(self, comment_id, data):
-        return Comment.objects(id=comment_id).update_one(
-            content=data['content'])
 
-    def is_writer(self, comment_id, auth_token_user_id):
+class CommentCheckService:
+    @staticmethod
+    def is_writer(cls, comment_id, auth_token_user_id):
         comment = Comment.objects.get(id=comment_id)
 
         return comment.writer.id == auth_token_user_id

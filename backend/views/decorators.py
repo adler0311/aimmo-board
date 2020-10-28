@@ -1,10 +1,9 @@
-from backend.services.auth_service import AuthService
 from flask import request, jsonify
 from mongoengine import DoesNotExist
 from functools import wraps
 import logging
 
-auth_service = AuthService()
+from backend.services.auth_service import AuthTokenLoadService
 
 
 def token_required(func):
@@ -15,7 +14,7 @@ def token_required(func):
             return jsonify({'message': 'token required'}), 401
 
         try:
-            auth_token = auth_service.get_auth_token(token)
+            auth_token = AuthTokenLoadService.get_auth_token(token)
 
         except DoesNotExist:
             return jsonify({'message': 'not authenticated'}), 401

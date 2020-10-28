@@ -1,6 +1,7 @@
 from flask_apispec import use_kwargs, marshal_with
 
-from backend.services.comment_service import CommentService
+from backend.services.comment_service import CommentCheckService, CommentSaveService, CommentLoadService, \
+    CommentModifyService, CommentRemoveService
 from backend.views.base_view import BaseView
 from flask import jsonify
 from flask_classful import route
@@ -9,8 +10,6 @@ from backend.schemas.comment_schema import CommentSchema, CommentLoadSchema
 from backend.views.decorators import token_required
 from functools import wraps
 
-service = CommentService()
-
 
 def authorization_required(func):
     @wraps(func)
@@ -18,7 +17,7 @@ def authorization_required(func):
         comment_id = kwargs['comment_id']
         auth_token = kwargs['auth_token']
 
-        if not service.is_writer(comment_id, auth_token.user.id):
+        if not CommentCheckService.is_writer(comment_id, auth_token.user.id):
             return jsonify({'message': 'not authorized'}), 403
 
         return func(*args, **kwargs)
@@ -37,7 +36,7 @@ class CommentsView(BaseView):
     @route('/', methods=['POST'])
     @use_kwargs(CommentLoadSchema)
     def post(self, post_id, content, auth_token):
-        result = service.post(post_id, auth_token.user, content)
+        result = CommentSaveService.post(post_id, auth_token.user, content)
 
         if not result:
             return {'message': 'id does not exist'}, 404
@@ -47,7 +46,7 @@ class CommentsView(BaseView):
     @route('/<string:comment_id>', methods=['GET'])
     @marshal_with(CommentSchema, 200)
     def get(self, post_id, comment_id):
-        comment, result = service.get(comment_id)
+        comment, result = CommentLoadService.get(comment_id)
 
         if not result:
             return {'message': 'id does not exist'}, 404
@@ -59,7 +58,7 @@ class CommentsView(BaseView):
     @use_kwargs(CommentLoadSchema)
     @route('/<string:comment_id>', methods=['PUT'])
     def put_comment(self, comment_id, content, **kwargs):
-        result = service.update(comment_id, content)
+        result = CommentModifyService.update(comment_id, content)
 
         if not result:
             return {'message': 'id does not exist'}, 404
@@ -70,7 +69,7 @@ class CommentsView(BaseView):
     @authorization_required
     @route('/<string:comment_id>', methods=['DELETE'])
     def delete(self, post_id, comment_id, **kwargs):
-        result = service.delete(post_id, comment_id)
+        result = CommentRemoveService.delete(post_id, comment_id)
 
         if not result:
             return jsonify({'message': 'id does not exist'}), 404

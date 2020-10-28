@@ -3,21 +3,24 @@ from backend.models.auth_token import AuthToken
 from backend.utils import Utils
 
 
-class AuthService:
-    def sign_in(self, user_id, password) -> AuthToken:
+class AuthLoadService:
+    @classmethod
+    def sign_in(cls, user_id, password) -> AuthToken:
         encrypted_password = Utils.encrypt_password(password)
 
-        u = User.get_user_by_id_and_password(
-            user_id=user_id, password=encrypted_password)
+        u = User.get_user_by_id_and_password(user_id=user_id, password=encrypted_password)
 
         if u is None:
             return None
 
         token = Utils.generate_token()
-        a = AuthToken(token=token, user=u)
-        a.save()
+        auth_token = AuthToken(token=token, user=u)
+        auth_token.save()
 
-        return a
+        return auth_token
 
-    def get_auth_token(self, token):
+
+class AuthTokenLoadService:
+    @classmethod
+    def get_auth_token(cls, token):
         return AuthToken.objects.get(token=token)

@@ -7,11 +7,26 @@ from backend.models.post import Post
 from backend.models.user import User
 
 
-class LikeService:
-    def get_many(self, content_id: str, content_type: str):
+def get_content(self, content_type):
+    if content_type == 'post':
+        content = Post
+    elif content_type == 'comment':
+        content = Comment
+    else:
+        content = Subcomment
+
+    return content
+
+
+class LikeLoadService:
+    @staticmethod
+    def get_many(cls, content_id: str, content_type: str):
         return Like.objects(Q(content_id=content_id) & Q(content_type=content_type))
 
-    def post(self, data, user: User):
+
+class LikeSaveService:
+    @staticmethod
+    def post(cls, data, user: User):
         try:
             content_id, content_type = data['content_id'], data['content_type']
             likes = Like.objects(Q(content_id=content_id) &
@@ -24,7 +39,7 @@ class LikeService:
                             content_type=content_type)
                 like.save()
 
-            content = self._get_content(content_type)
+            content = get_content(content_type)
             c = content.objects.get(id=content_id)
 
             c.update(likes=c.likes + 1 if c.likes is not None else 1)
@@ -33,28 +48,20 @@ class LikeService:
         except DoesNotExist:
             return False
 
-    def delete(self, data, user: User):
+
+class LikeRemoveService:
+    @staticmethod
+    def delete(cls, data, user: User):
         try:
             content_id, content_type = data['content_id'], data['content_type']
             like = Like.objects.get(Q(content_id=content_id) &
                                     Q(content_type=content_type) & Q(user_id=user.id))
             like.update(active=False)
 
-            content = self._get_content(content_type)
+            content = get_content(content_type)
             c = content.objects.get(id=content_id)
             c.update(likes=c.likes - 1 if c.likes is not None else 0)
 
             return True
         except DoesNotExist:
             return False
-
-    def _get_content(self, content_type):
-        content = None
-        if content_type == 'post':
-            content = Post
-        elif content_type == 'comment':
-            content = Comment
-        else:
-            content = Subcomment
-
-        return content
