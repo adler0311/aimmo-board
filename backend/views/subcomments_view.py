@@ -1,5 +1,6 @@
 from flask_apispec import marshal_with, use_kwargs
 
+from backend.schemas.base_schema import ResponseErrorSchema, ResponseSuccessSchema
 from backend.services.subcomment_service import SubCommentCheckService, SubCommentLoadService, SubCommentSaveService, \
     SubCommentUpdateService, SubCommentRemoveService
 from backend.views.base_view import BaseView
@@ -28,48 +29,55 @@ def authorization_required(func):
 class SubcommentsView(BaseView):
 
     @route('/')
-    @marshal_with(SubcommentSchema(many=True), 200)
+    @marshal_with(SubcommentSchema(many=True), code=200)
     def comments(self, comment_id):
         return SubCommentLoadService.get_many(comment_id)
 
     @token_required
     @use_kwargs(SubCommentLoadSchema)
     @route('/', methods=['POST'])
+    @marshal_with(ResponseSuccessSchema, code=201)
+    @marshal_with(ResponseErrorSchema, code=404)
     def post(self, auth_token, comment_id, content):
         result = SubCommentSaveService.post(content, comment_id, auth_token.user)
 
         if not result:
-            return {'message': 'Comment matching id does not exist'}, 404
+            return None, 404
 
-        return {'result': True}, 201
+        return None, 201
 
     @route('/<subcomment_id>')
-    @marshal_with(SubcommentSchema, 200)
+    @marshal_with(SubcommentSchema, code=200)
+    @marshal_with(ResponseErrorSchema, code=404)
     def get(self, subcomment_id, **kwargs):
         try:
             return SubCommentLoadService.get_one(subcomment_id)
         except DoesNotExist:
-            return jsonify({'message': 'Post matching query does not exist'}), 404
+            return None, 404
 
     @token_required
     @authorization_required
     @use_kwargs(SubCommentLoadSchema)
     @route('/<string:subcomment_id>', methods=['PUT'])
+    @marshal_with(ResponseSuccessSchema, code=200)
+    @marshal_with(ResponseErrorSchema, code=404)
     def put(self, content, subcomment_id, **kwargs):
         result = SubCommentUpdateService.update(subcomment_id, content)
 
         if not result:
-            return {'message': 'Comment matching id does not exist'}, 404
+            return None, 404
 
-        return {'result': True}, 200
+        return None
 
     @token_required
     @authorization_required
     @route('/<subcomment_id>', methods=['DELETE'])
+    @marshal_with(ResponseSuccessSchema, code=200)
+    @marshal_with(ResponseErrorSchema, code=404)
     def delete(self, comment_id, subcomment_id, **kwargs):
         result = SubCommentRemoveService.delete(comment_id, subcomment_id)
 
         if not result:
-            return {'message': 'id does not exist'}, 404
+            return None, 404
 
-        return {'result': result}, 200
+        return None

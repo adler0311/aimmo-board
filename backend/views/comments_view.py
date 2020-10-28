@@ -1,5 +1,6 @@
 from flask_apispec import use_kwargs, marshal_with
 
+from backend.schemas.base_schema import ResponseErrorSchema, ResponseSuccessSchema
 from backend.services.comment_service import CommentCheckService, CommentSaveService, CommentLoadService, \
     CommentModifyService, CommentRemoveService
 from backend.views.base_view import BaseView
@@ -28,28 +29,31 @@ def authorization_required(func):
 class CommentsView(BaseView):
 
     @route('/')
-    @marshal_with(CommentSchema(many=True), 200)
+    @marshal_with(CommentSchema(many=True), code=200)
     def comments(self, post_id):
         return Comment.objects(post_id=post_id)
 
     @token_required
-    @route('/', methods=['POST'])
     @use_kwargs(CommentLoadSchema)
+    @route('/', methods=['POST'])
+    @marshal_with(ResponseSuccessSchema, code=201)
+    @marshal_with(ResponseErrorSchema, code=404)
     def post(self, post_id, content, auth_token):
         result = CommentSaveService.post(post_id, auth_token.user, content)
 
         if not result:
-            return {'message': 'id does not exist'}, 404
+            return None, 404
 
-        return {'result': True}, 201
+        return None, 201
 
     @route('/<string:comment_id>', methods=['GET'])
-    @marshal_with(CommentSchema, 200)
+    @marshal_with(CommentSchema, code=200)
+    @marshal_with(ResponseErrorSchema, code=404)
     def get(self, post_id, comment_id):
         comment, result = CommentLoadService.get(comment_id)
 
         if not result:
-            return {'message': 'id does not exist'}, 404
+            return None, 404
 
         return comment
 
@@ -57,21 +61,25 @@ class CommentsView(BaseView):
     @authorization_required
     @use_kwargs(CommentLoadSchema)
     @route('/<string:comment_id>', methods=['PUT'])
+    @marshal_with(ResponseSuccessSchema, code=200)
+    @marshal_with(ResponseErrorSchema, code=404)
     def put_comment(self, comment_id, content, **kwargs):
         result = CommentModifyService.update(comment_id, content)
 
         if not result:
-            return {'message': 'id does not exist'}, 404
+            return None, 404
 
-        return {'result': True}, 200
+        return None
 
     @token_required
     @authorization_required
     @route('/<string:comment_id>', methods=['DELETE'])
+    @marshal_with(ResponseSuccessSchema, code=200)
+    @marshal_with(ResponseErrorSchema, code=404)
     def delete(self, post_id, comment_id, **kwargs):
         result = CommentRemoveService.delete(post_id, comment_id)
 
         if not result:
-            return jsonify({'message': 'id does not exist'}), 404
+            return None, 404
 
-        return {'result': True}, 200
+        return None

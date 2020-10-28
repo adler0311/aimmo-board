@@ -7,6 +7,6 @@ from backend.schemas.board_schema import BoardSchema
 
 class BoardsView(BaseView):
 
-    @marshal_with(BoardSchema(many=True))
+    @marshal_with(BoardSchema(many=True), code=200)
     def index(self):
         return BoardLoadService.get_many()
