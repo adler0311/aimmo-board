@@ -1,3 +1,6 @@
+from typing import List
+
+from backend.models.like import Like
 from backend.models.post import Post
 import pytest
 from unittest import mock
@@ -10,28 +13,33 @@ def dummy_query_data():
     return {'contentId': 'dummy_content_id', 'contentType': 'post'}
 
 
+@pytest.fixture
+def dummy_content_id(dummy_query_data):
+    return dummy_query_data['contentId']
+
+
+@pytest.fixture
+def dummy_content_type(dummy_query_data):
+    return dummy_query_data['contentType']
+
+
 @mock.patch("backend.views.likes_view.LikeService.get_many")
-@mock.patch("backend.views.likes_view.LikeSchema.dump")
-def test_get_likes_success(mock_dump, mock_get_many,
-                           client, valid_token_header, dummy_query_data):
+def test_get_likes_is_success(mock_get_many, client, dummy_content_id, dummy_content_type):
+    mock_get_many.return_value = [Like(content_id=dummy_content_id,content_type=dummy_content_type)]
 
-    mock_get_many.return_value = [Post()]
-    mock_dump.return_value = True
-
-    response = client.get(
-        '/likes/?contentId={}&contentType={}'.format(
-            dummy_query_data['contentId'], dummy_query_data['contentType']),
-        headers=valid_token_header)
+    response = client.get('/likes/?contentId={}&contentType={}'.format(dummy_content_id, dummy_content_type))
 
     assert response.status_code == 200
+    data: List[Like] = json.loads(response.data)
+    assert data[0]['contentId'] == dummy_content_id
 
 
-@mock.patch("backend.views.decorators.AuthToken")
+@mock.patch("backend.views.decorators.AuthService.get_auth_token")
 @mock.patch("backend.views.likes_view.LikeService.post")
-def test_create_like_of_content_success(mock_post, mock_auth_token, client,
+def test_create_like_of_content_success(mock_post, mock_get_auth_token, client,
                                         dummy_query_data, valid_token, valid_token_header):
 
-    mock_auth_token.objects.get.return_value = AuthToken(token=valid_token)
+    mock_get_auth_token.return_value = AuthToken(token=valid_token)
     mock_post.return_value = True
 
     response = client.post('/likes/', data=json.dumps(dummy_query_data),

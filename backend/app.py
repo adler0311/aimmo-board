@@ -113,18 +113,18 @@ def create_app():
     logging.basicConfig(level=logging.DEBUG)
 
     connect('test')
-    initiate_collection_for_test()
+    # initiate_collection_for_test()
 
     app = Flask(__name__)
+
+    AuthView.register(app, route_base='/auth', base_class=BaseView)
+    UsersView.register(app, route_base='/users', base_class=BaseView)
 
     BoardsView.register(app, route_base='/boards', base_class=BaseView)
     PostsView.register(app, route_base='/boards/<string:board_id>/posts', base_class=BaseView)
     CommentsView.register(app, route_base='/boards/<string:board_id>/posts/<string:post_id>/comments', base_class=BaseView)
-    SubcommentsView.register(app, route_base='/boards/<string:board_id>/posts/<string:post_id>/comments/<string:comment_id>/sub-comments', base_class=BaseView)
+    SubcommentsView.register(app, route_base='/comments/<string:comment_id>/sub-comments', base_class=BaseView)
 
-    UsersView.register(app, base_class=BaseView)
-    AuthView.register(app, base_class=BaseView)
-
-    LikesView.register(app, base_class=BaseView)
+    LikesView.register(app, route_base='/likes', base_class=BaseView)
 
     return app

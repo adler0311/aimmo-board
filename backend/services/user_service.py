@@ -16,15 +16,15 @@ class UserService:
         a = AuthToken(token=token, user=u)
         a.save()
 
-        return token, u
+        return a
 
-    def get_user_contents(self, type, user: User):
+    def get_posts(self, user_id):
+        return Post.objects(writer=user_id)
 
-        if type == 'post':
-            return Post.objects(writer=user.id)
-        elif type == 'comment':
-            return Comment.objects(writer=user.id)
-        else:
-            content_ids = list(
-                map(lambda l: l.content_id, Like.objects(user_id=user.id)))
-            return Post.objects(id__in=content_ids)
+    def get_comments(self, user_id):
+        return Comment.objects(writer=user_id)
+
+    def get_liked_posts(self, user_id):
+        content_ids = list(
+            map(lambda l: l.content_id, Like.objects(user_id=user_id)))
+        return Post.objects(id__in=content_ids)

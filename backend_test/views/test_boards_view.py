@@ -37,7 +37,7 @@ def test_get_boards(mock_get_many, mock_dump, client, boards, boards_json):
     assert http_response.status_code == 200
 
     schema = PostSchema(many=True)
-    result = {'boards': schema.dump(boards)}
+    result = schema.dump(boards)
     data = json.loads(http_response.data)
     assert result == data
 

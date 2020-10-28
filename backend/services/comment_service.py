@@ -7,11 +7,11 @@ from backend.models.user import User
 
 
 class CommentService:
-    def post(self, post_id, user: User, data):
+    def post(self, post_id, user: User, content):
         try:
             p = Post.objects.get(id=post_id)
 
-            c = Comment(**data, post_id=post_id, writer=user)
+            c = Comment(content=content, post_id=post_id, writer=user)
             c.save()
 
             Post.objects(id=p.id).update_one(comments=[c] + p.comments)

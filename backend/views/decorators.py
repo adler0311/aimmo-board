@@ -1,6 +1,5 @@
 from backend.services.auth_service import AuthService
 from flask import request, jsonify
-from marshmallow.exceptions import ValidationError
 from mongoengine import DoesNotExist
 from functools import wraps
 import logging
@@ -27,19 +26,6 @@ def token_required(func):
     return wrapper
 
 
-def input_data_required(func):
-    @wraps(wrapped=func)
-    def wrapper(*args, **kwargs):
-        json_data = request.get_json(force=True)
-        if not json_data:
-            return jsonify({'message': 'No input data provided'}), 400
-
-        kwargs['json_data'] = json_data
-        return func(*args, **kwargs)
-
-    return wrapper
-
-
 def handle_internal_server_error(func):
     def wrapper(*args, **kwargs):
         try:
@@ -49,20 +35,3 @@ def handle_internal_server_error(func):
             return jsonify({'message': 'Internal Server Error'}), 500
 
     return wrapper
-
-
-def deserialize(schema):
-    def outer_wrapper(func):
-        @wraps(wrapped=func)
-        def wrapper(*args, **kwargs):
-            json_data = kwargs['json_data']
-
-            try:
-                data = schema.load(json_data)
-                kwargs['data'] = data
-            except ValidationError:
-                return {'result': 'validation error'}, 400
-
-            return func(*args, **kwargs)
-        return wrapper
-    return outer_wrapper

@@ -1,45 +1,40 @@
-from backend.views.base_view import BaseView
-from flask.globals import request
-from backend.schemas.like_schema import LikeSchema
-from backend.services.like_service import LikeService
-from backend.views.decorators import deserialize,  input_data_required, token_required
+from flask_apispec import use_kwargs, marshal_with
 
+from backend.views.base_view import BaseView
+from backend.schemas.like_schema import LikeSchema, LikeLoadSchema
+from backend.services.like_service import LikeService
+from backend.views.decorators import token_required
+from flask_classful import route
 
 service = LikeService()
-request_schema = LikeSchema()
-response_schema = LikeSchema(many=True)
 
 
 class LikesView(BaseView):
 
-    def index(self, **kwargs):
-        content_id = request.args.get('contentId')
-        content_type = request.args.get('contentType')
-        result = service.get_many(
-            content_id, content_type)
-
-        return {'result': [] if len(result) == 0 else response_schema.dump(result)}, 200
+    @use_kwargs(LikeLoadSchema, location='query')
+    @route('/')
+    @marshal_with(LikeSchema(many=True), 200)
+    def index(self, content_id, content_type):
+        return service.get_many(content_id, content_type)
 
     @token_required
-    @input_data_required
-    @deserialize(request_schema)
-    def post(self, **kwargs):
-        auth_token, data = kwargs['auth_token'], kwargs['data']
-        result = service.post(data, auth_token.user)
+    @use_kwargs(LikeLoadSchema)
+    @route('/', methods=['POST'])
+    def post(self, auth_token, content_id, content_type):
+        result = service.post(content_id, content_type, auth_token.user)
 
         if not result:
             return {'message': 'id does not exist'}, 404
 
-        return {'result': result}, 201
+        return {'result': True}, 201
 
     @token_required
-    @input_data_required
-    @deserialize(request_schema)
-    def delete(self, **kwargs):
-        auth_token, data = kwargs['auth_token'], kwargs['data']
-        result = service.delete(data, auth_token.user)
+    @use_kwargs(LikeLoadSchema)
+    @route('/', methods=['DELETE'])
+    def delete(self, auth_token, content_id, content_type):
+        result = service.delete(content_id, content_type, auth_token.user)
 
         if not result:
             return {'message': 'id does not exist'}, 404
 
-        return {'result': result}, 200
+        return {'result': True}, 200
