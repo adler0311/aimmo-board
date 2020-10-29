@@ -1,5 +1,7 @@
 from flask_apispec import marshal_with, use_kwargs
+from mongoengine import DoesNotExist
 
+from backend.models.board import Board
 from backend.schemas.base import ResponseErrorSchema, ResponseSuccessSchema
 from backend.views.base import BaseView
 from functools import wraps
@@ -27,10 +29,15 @@ def authorization_required(func):
 class PostsView(BaseView):
     @use_kwargs(PostLoadSchema, location='query')
     @route('/')
-    @marshal_with(PostSchema(only=['_id'], many=True), code=200)
+    @marshal_with(PostSchema(only=['id', 'title'], many=True), code=200)
     def get_board_posts(self, board_id, order_type, limit, is_notice, keyword=None):
-        posts = PostLoadService.get_many(board_id=board_id, order_type=order_type, limit=limit, keyword=keyword, is_notice=is_notice)
-        return posts
+        try:
+            board = Board.objects.get(id=board_id)
+        except DoesNotExist:
+            return [], 404
+
+        posts = PostLoadService.get_many(board_id=board.id, order_type=order_type, limit=limit, keyword=keyword, is_notice=is_notice)
+        return posts, 200
 
     @token_required
     @use_kwargs(PostBodyLoadSchema)

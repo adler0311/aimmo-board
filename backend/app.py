@@ -3,7 +3,7 @@ from backend.models.like import Like
 from backend.models.subcomment import Subcomment
 from typing import List
 from backend.models.board import Board
-from flask import Flask
+from flask import Blueprint, Flask
 from mongoengine import connect
 from backend.models.post import Post
 from backend.models.user import User
@@ -109,9 +109,6 @@ def initiate_collection_for_test():
 
 def create_app():
     logging.basicConfig(level=logging.DEBUG)
-
-    connect('test')
-    initiate_collection_for_test()
 
     app = Flask(__name__)
 

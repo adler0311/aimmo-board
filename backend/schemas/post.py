@@ -5,7 +5,7 @@ from backend.shared.post_order_type import PostOrderType
 
 
 class PostSchema(Schema):
-    _id = fields.Function(lambda p: str(p.pk))
+    id = fields.String()
     title = fields.String(required=True)
     content = fields.String(required=True)
     writer = fields.Nested(UserMarshalSchema)

@@ -1,17 +1,16 @@
-from mongoengine.fields import BooleanField, DateField
+from mongoengine.fields import BooleanField
 from mongoengine.queryset.manager import queryset_manager
 from mongoengine.queryset.queryset import QuerySet, BaseQuerySet
+
+from backend.models.board import Board
 from backend.models.content import Content
-from mongoengine import StringField, ListField, ReferenceField
-from mongoengine.base.fields import ObjectIdField
-from backend.models.comment import Comment
+from mongoengine import StringField, ReferenceField
 
 
 class Post(Content):
     title = StringField()
-    board_id = ObjectIdField('boardId')
-    comments = ListField(ReferenceField(Comment))
-    is_notice = BooleanField(default=False, db_field='isNotice')
+    board = ReferenceField(Board, required=True)
+    is_notice = BooleanField(default=False)
 
     meta = {'indexes': [
         {'fields': ['$title', '$content']}
@@ -22,7 +21,7 @@ class Post(Content):
         result: BaseQuerySet = queryset.order_by('-' + order_type)
 
         if board_id is not None:
-            result = result.filter(board_id=board_id)
+            result = result.filter(board=board_id)
 
         if keyword is not None:
             result = result.search_text(keyword)
