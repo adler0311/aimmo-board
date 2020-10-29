@@ -8,5 +8,5 @@ class User(Document):
     password = StringField()
 
     @queryset_manager
-    def get_user_by_id_and_password(doc_cls, queryset, user_id, password):
+    def get_user_by_id_and_password(self, queryset, user_id, password):
         return queryset.filter(Q(user_id=user_id) & Q(password=password)).first()

@@ -3,7 +3,7 @@ from mongoengine import DoesNotExist
 from functools import wraps
 import logging
 
-from backend.services.auth_service import AuthTokenLoadService
+from backend.services.auth import AuthTokenLoadService
 
 
 def token_required(func):
@@ -26,10 +26,11 @@ def token_required(func):
 
 
 def handle_internal_server_error(func):
+    @wraps(func)
     def wrapper(*args, **kwargs):
         try:
             return func(*args, **kwargs)
-        except Exception as e:
+        except RuntimeError as e:
             logging.debug(e)
             return jsonify({'message': 'Internal Server Error'}), 500
 

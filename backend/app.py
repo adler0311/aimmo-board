@@ -1,4 +1,4 @@
-from backend.views.base_view import BaseView
+from backend.views.base import BaseView
 from backend.models.like import Like
 from backend.models.subcomment import Subcomment
 from typing import List
@@ -10,13 +10,13 @@ from backend.models.user import User
 from backend.models.auth_token import AuthToken
 from backend.models.comment import Comment
 from lorem_text import lorem
-from backend.views.posts_view import PostsView
-from backend.views.comments_view import CommentsView
-from backend.views.users_view import UsersView
-from backend.views.auth_view import AuthView
-from backend.views.boards_view import BoardsView
-from backend.views.subcomments_view import SubcommentsView
-from backend.views.likes_view import LikesView
+from backend.views.posts import PostsView
+from backend.views.comments import CommentsView
+from backend.views.users import UsersView
+from backend.views.auth import AuthView
+from backend.views.boards import BoardsView
+from backend.views.subcomments import SubcommentsView
+from backend.views.likes import LikesView
 import logging
 
 
@@ -38,28 +38,27 @@ def initiate_collection_for_test():
 
     comments = []
     for i in range(5):
-        c_comment = lorem.words(3)
+        comment = lorem.words(3)
         writer = User(user_id='댓글 작성자 {}'.format(i+1))
         writer.save()
-        comments.append(Comment(content=c_comment,
+        comments.append(Comment(content=comment,
                                 writer=writer, post_id=post_with_comment.id))
 
     writer = User(
         user_id="대댓글 있는 댓글 작성자 1")
     writer.save()
-    c_with_sub = Comment(content="대댓글 있는 댓글", writer=writer,
-                         post_id=post_with_comment.id)
-    c_with_sub.save()
-    subcomments = []
+    comment_with_sub_comments = Comment(content="대댓글 있는 댓글", writer=writer, post_id=post_with_comment.id)
+    comment_with_sub_comments.save()
+    sub_comments = []
     for i in range(3):
         writer = User(user_id='대댓글 작성자 {}'.format(i+1))
         writer.save()
-        sub = Subcomment(content="대댓글 {}".format(i+1), writer=writer)
-        sub.save()
-        subcomments.append(sub)
+        sub_comment = Subcomment(content="대댓글 {}".format(i+1), writer=writer)
+        sub_comment.save()
+        sub_comments.append(sub_comment)
 
-    Comment.objects(id=c_with_sub.id).update_one(subcomments=subcomments)
-    comments.append(c_with_sub)
+    Comment.objects(id=comment_with_sub_comments.id).update_one(subcomments=sub_comments)
+    comments.append(comment_with_sub_comments)
 
     for comment in comments:
         comment.save()
@@ -73,8 +72,8 @@ def initiate_collection_for_test():
         writer = User(user_id='글 작성자 {}'.format(i + 1))
         writer.save()
 
-        p = Post(title=title, content=content, writer=writer)
-        saved = p.save()
+        post = Post(title=title, content=content, writer=writer)
+        saved = post.save()
         posts.append(saved)
 
     # 검색할 글
@@ -82,19 +81,18 @@ def initiate_collection_for_test():
     content = "검색 글 내용"
     writer = User(user_id='검색 글 작성자')
     writer.save()
-    search_p = Post(title=title, content=content, writer=writer)
-    saved_search_p = search_p.save()
-    posts.append(saved_search_p)
+    search_post = Post(title=title, content=content, writer=writer)
+    saved_search_post = search_post.save()
+    posts.append(saved_search_post)
 
     title = "공지 글"
     content = "공지 글 내용"
     writer = User(user_id='관리자')
     writer.save()
 
-    search_p = Post(title=title, content=content,
-                    writer=writer, is_notice=True)
-    saved_search_p = search_p.save()
-    posts.append(saved_search_p)
+    search_post = Post(title=title, content=content, writer=writer, is_notice=True)
+    saved_search_post = search_post.save()
+    posts.append(saved_search_post)
 
     posts.append(post_with_comment)
 
@@ -113,7 +111,7 @@ def create_app():
     logging.basicConfig(level=logging.DEBUG)
 
     connect('test')
-    # initiate_collection_for_test()
+    initiate_collection_for_test()
 
     app = Flask(__name__)
 
@@ -123,7 +121,7 @@ def create_app():
     BoardsView.register(app, route_base='/boards', base_class=BaseView)
     PostsView.register(app, route_base='/boards/<string:board_id>/posts', base_class=BaseView)
     CommentsView.register(app, route_base='/boards/<string:board_id>/posts/<string:post_id>/comments', base_class=BaseView)
-    SubcommentsView.register(app, route_base='/comments/<string:comment_id>/sub-comments', base_class=BaseView)
+    SubcommentsView.register(app, route_base='/boards/<string:board_id>/posts/<string:post_id>/comments/<string:comment_id>/sub-comments', base_class=BaseView)
 
     LikesView.register(app, route_base='/likes', base_class=BaseView)
 

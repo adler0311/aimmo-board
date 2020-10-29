@@ -18,7 +18,7 @@ class Post(Content):
     ]}
 
     @queryset_manager
-    def get_posts_with_parameters(doc_cls, queryset: QuerySet, order_type, limit, keyword, board_id, is_notice):
+    def get_posts_with_parameters(self, queryset: QuerySet, order_type, limit, keyword, board_id, is_notice):
         result: BaseQuerySet = queryset.order_by('-' + order_type)
 
         if board_id is not None:
@@ -27,7 +27,7 @@ class Post(Content):
         if keyword is not None:
             result = result.search_text(keyword)
 
-        if is_notice is not None:
+        if is_notice:
             result = result.filter(is_notice=is_notice)
 
         return result[:limit]
