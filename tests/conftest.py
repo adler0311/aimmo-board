@@ -21,7 +21,7 @@ def app_context(app):
 @pytest.fixture(scope='function', autouse=True)
 def db(app):
     import mongoengine
-    conn = mongoengine.connect(host='mongomock://127.0.0.1:27017/eimmo?connect=false')
+    conn = mongoengine.connect(host=app.config['MONGO_URI'])
     yield conn
     mongoengine.disconnect()
 

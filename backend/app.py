@@ -1,3 +1,4 @@
+from backend.config import get_current_config
 from backend.views.base import BaseView
 from backend.models.like import Like
 from backend.models.subcomment import SubComment
@@ -39,7 +40,7 @@ def initiate_collection_for_test():
     comments = []
     for i in range(5):
         comment = lorem.words(3)
-        writer = User(user_id='댓글 작성자 {}'.format(i+1))
+        writer = User(user_id='댓글 작성자 {}'.format(i + 1))
         writer.save()
         comments.append(Comment(content=comment,
                                 writer=writer, post_id=post_with_comment.id))
@@ -51,9 +52,9 @@ def initiate_collection_for_test():
     comment_with_sub_comments.save()
     sub_comments = []
     for i in range(3):
-        writer = User(user_id='대댓글 작성자 {}'.format(i+1))
+        writer = User(user_id='대댓글 작성자 {}'.format(i + 1))
         writer.save()
-        sub_comment = SubComment(content="대댓글 {}".format(i+1), writer=writer)
+        sub_comment = SubComment(content="대댓글 {}".format(i + 1), writer=writer)
         sub_comment.save()
         sub_comments.append(sub_comment)
 
@@ -96,7 +97,7 @@ def initiate_collection_for_test():
 
     posts.append(post_with_comment)
 
-    boards = [Board(title='게시판 {}'.format(i+1)) for i in range(3)]
+    boards = [Board(title='게시판 {}'.format(i + 1)) for i in range(3)]
     Board.objects.insert(boards)
 
     board = Board(title='게시글 있는 게시판', posts=posts)
@@ -111,6 +112,7 @@ def create_app():
     logging.basicConfig(level=logging.DEBUG)
 
     app = Flask(__name__)
+    app.config.from_object(get_current_config())
 
     AuthView.register(app, route_base='/auth', base_class=BaseView)
     UsersView.register(app, route_base='/users', base_class=BaseView)
