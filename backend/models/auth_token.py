@@ -5,6 +5,6 @@ from backend.models.user import User
 
 
 class AuthToken(Document):
-    token = StringField()
-    user = ReferenceField(User)
+    token = StringField(required=True)
+    user = ReferenceField(document_type=User)
     created = DateTimeField(default=datetime.datetime.utcnow)

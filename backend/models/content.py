@@ -5,9 +5,9 @@ import datetime
 
 
 class Content(Document):
-    type = StringField()
-    content = StringField()
-    writer = ReferenceField(User)
+    type = StringField(choices=('post', 'comment', 'sub_comment'))
+    content = StringField(required=True)
+    writer = ReferenceField(document_type=User)
     likes = IntField()
     created = DateTimeField(default=datetime.datetime.now)
 

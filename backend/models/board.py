@@ -2,7 +2,7 @@ from mongoengine import Document, StringField
 
 
 class Board(Document):
-    title = StringField()
+    title = StringField(required=True)
 
     # @queryset_manager
     # def exclude_post(self, queryset: QuerySet, board_id, post_id):

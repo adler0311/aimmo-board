@@ -8,8 +8,8 @@ from mongoengine import StringField, ReferenceField
 
 
 class Post(Content):
-    title = StringField()
-    board = ReferenceField(Board, required=True)
+    title = StringField(required=True)
+    board = ReferenceField(document_type=Board, required=True)
     is_notice = BooleanField(default=False)
 
     meta = {'indexes': [

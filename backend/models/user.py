@@ -4,8 +4,8 @@ from mongoengine.queryset.visitor import Q
 
 
 class User(Document):
-    user_id = StringField(db_field='userId')
-    password = StringField()
+    user_id = StringField(required=True)
+    password = StringField(required=True)
 
     @queryset_manager
     def get_user_by_id_and_password(self, queryset, user_id, password):

@@ -1,4 +1,4 @@
-from backend.models.subcomment import Subcomment
+from backend.models.subcomment import SubComment
 from backend.models.comment import Comment
 from mongoengine.queryset.visitor import Q
 from backend.models.like import Like
@@ -14,7 +14,7 @@ def get_content(content_type):
     elif content_type == LikeType.COMMENT.value:
         content = Comment
     elif content_type == LikeType.SUB_COMMENT.value:
-        content = Subcomment
+        content = SubComment
     else:
         content = None
 

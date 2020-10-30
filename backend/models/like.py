@@ -1,10 +1,11 @@
 from mongoengine import Document
-from mongoengine.base.fields import ObjectIdField
-from mongoengine.fields import BooleanField, StringField
+from mongoengine.fields import BooleanField, GenericReferenceField, ReferenceField, StringField
+
+from backend.models.user import User
 
 
 class Like(Document):
-    content_id = ObjectIdField('contentId')
-    content_type = StringField()
-    user_id = ObjectIdField('userId')
+    content = GenericReferenceField(required=True)
+    content_type = StringField(choices=('post', 'comment', 'sub_comment'))
+    user = ReferenceField(document_type=User, required=True)
     active = BooleanField(default=True)

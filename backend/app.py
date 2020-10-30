@@ -1,6 +1,6 @@
 from backend.views.base import BaseView
 from backend.models.like import Like
-from backend.models.subcomment import Subcomment
+from backend.models.subcomment import SubComment
 from typing import List
 from backend.models.board import Board
 from flask import Blueprint, Flask
@@ -26,7 +26,7 @@ def initiate_collection_for_test():
     Comment.objects.delete()
     User.objects.delete()
     AuthToken.objects.delete()
-    Subcomment.objects.delete()
+    SubComment.objects.delete()
     Like.objects.delete()
 
     title = "댓글 있는 글"
@@ -53,7 +53,7 @@ def initiate_collection_for_test():
     for i in range(3):
         writer = User(user_id='대댓글 작성자 {}'.format(i+1))
         writer.save()
-        sub_comment = Subcomment(content="대댓글 {}".format(i+1), writer=writer)
+        sub_comment = SubComment(content="대댓글 {}".format(i+1), writer=writer)
         sub_comment.save()
         sub_comments.append(sub_comment)
 

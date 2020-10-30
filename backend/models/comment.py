@@ -1,9 +1,10 @@
 from backend.models.content import Content
-from backend.models.subcomment import Subcomment
-from mongoengine import ReferenceField, ObjectIdField
-from mongoengine.fields import ListField
+from mongoengine import ReferenceField
+
+from backend.models.post import Post
 
 
 class Comment(Content):
-    post_id = ObjectIdField('postId')
-    subcomments = ListField(ReferenceField(Subcomment))
+    post = ReferenceField(document_type=Post, required=True)
+
+

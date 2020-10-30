@@ -1,4 +1,3 @@
-import logging
 
 import pytest
 from bson import ObjectId

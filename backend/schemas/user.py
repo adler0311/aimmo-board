@@ -1,7 +1,5 @@
 from marshmallow import Schema, fields, validate
 
-from backend.shared.user_post_type import UserPostType
-
 
 class UserBodyLoadSchema(Schema):
     user_id = fields.String(data_key="userId", required=True)
