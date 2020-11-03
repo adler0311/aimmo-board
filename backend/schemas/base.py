@@ -1,4 +1,3 @@
-
 from marshmallow import Schema, fields
 
 
@@ -9,7 +8,7 @@ class ResponseErrorSchema(Schema):
         if status_code == 404:
             return "document matching id does not exist"
 
-        NotImplemented
+        raise NotImplemented
 
 
 class ResponseSuccessSchema(Schema):

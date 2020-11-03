@@ -3,6 +3,7 @@ from typing import List
 from mongoengine import QuerySet
 from mongoengine.errors import DoesNotExist
 
+from backend.errors import ForbiddenError
 from backend.models.comment import Comment
 from backend.models.user import User
 from backend.models.post import Post
@@ -47,8 +48,14 @@ class PostModifyService:
 
 class PostRemoveService:
     @classmethod
-    def delete(cls, post_id):
-        return Post.objects(id=post_id).delete()
+    def check_is_writer(cls, post, user):
+        if not post.is_writer(user):
+            raise ForbiddenError(message='작성자만 삭제가 가능합니다.')
+
+    @classmethod
+    def delete(cls, post, requester):
+        cls.check_is_writer(post, requester)
+        post.delete()
 
 
 class PostCheckService:

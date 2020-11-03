@@ -5,13 +5,13 @@ from backend.models.subcomment import SubComment
 from typing import List
 from backend.models.board import Board
 from flask import Blueprint, Flask
-from mongoengine import connect
+from mongoengine import connect, DoesNotExist
 from backend.models.post import Post
 from backend.models.user import User
 from backend.models.auth_token import AuthToken
 from backend.models.comment import Comment
 from lorem_text import lorem
-from backend.views.posts import PostsView
+from backend.views.posts import ApiError, PostsView
 from backend.views.comments import CommentsView
 from backend.views.subcomments import SubCommentsView
 from backend.views.users import UsersView
@@ -123,5 +123,16 @@ def create_app():
     SubCommentsView.register(app, route_base='/boards/<string:board_id>/posts/<string:post_id>/comments/<string:comment_id>/sub-comments', base_class=BaseView)
 
     LikesView.register(app, route_base='/likes', base_class=BaseView)
+
+    @app.errorhandler(DoesNotExist)
+    def handle_document_does_not_exist(e):
+        return 'Document Does not exist.', 404
+
+    @app.errorhandler(ApiError)
+    def handle_api_error(e: 'ApiError'):
+        return e.message, e.status_code
+
+    app.register_error_handler(404, handle_document_does_not_exist)
+    app.register_error_handler(ApiError, handle_api_error)
 
     return app

@@ -14,3 +14,6 @@ class Content(Document):
     created = DateTimeField(default=datetime.datetime.now)
 
     meta = {'abstract': True}
+
+    def is_writer(self, user):
+        return self.writer.id == user.id

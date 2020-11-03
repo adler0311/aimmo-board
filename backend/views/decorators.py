@@ -1,4 +1,4 @@
-from flask import request, jsonify
+from flask import g, request, jsonify
 from mongoengine import DoesNotExist
 from functools import wraps
 import logging
@@ -20,6 +20,7 @@ def token_required(func):
             return jsonify({'message': 'not authenticated'}), 401
 
         kwargs['auth_token'] = auth_token
+        g.user = auth_token.user
         return func(*args, **kwargs)
 
     return wrapper

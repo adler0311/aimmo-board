@@ -1,10 +1,11 @@
 from functools import wraps
 
-from flask import jsonify
+from flask import g, jsonify
 from flask_apispec import marshal_with, use_kwargs
 from flask_classful import route
 from mongoengine import DoesNotExist
 
+from backend.errors import ApiError, ForbiddenError
 from backend.models.board import Board
 from backend.models.post import Post
 from backend.schemas.base import ResponseErrorSchema, ResponseSuccessSchema
@@ -81,15 +82,13 @@ class PostsView(BaseView):
         return None
 
     @token_required
-    @post_exist_check
-    @authorization_required
     @route('/<post_id>', methods=['DELETE'])
     @marshal_with(ResponseSuccessSchema, code=200)
     @marshal_with(ResponseErrorSchema, code=404)
     def delete(self, post_id, **kwargs):
-        result = PostRemoveService.delete(post_id)
-
-        if not result:
-            return None, 404
-
-        return True
+        post = Post.objects.get(id=post_id)
+        try:
+            PostRemoveService.delete(post, g.user)
+        except ForbiddenError as e:
+            raise ApiError(message=e.message, status_code=403)
+        return '', 200

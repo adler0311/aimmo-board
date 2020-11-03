@@ -241,12 +241,12 @@ class Describe_PostsView:
 
             class Describe_delete:
                 @pytest.fixture
-                def to_delete_post(self, auth_token):
+                def post(self, auth_token):
                     return PostFactory.create(writer=auth_token.user)
 
                 @pytest.fixture
-                def post_id(self, to_delete_post):
-                    return to_delete_post.id
+                def post_id(self, post):
+                    return post.id
 
                 @pytest.fixture
                 def subject(self, client, board, token_header, post_id):
