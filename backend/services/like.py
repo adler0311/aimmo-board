@@ -5,15 +5,15 @@ from backend.models.like import Like
 from mongoengine.errors import DoesNotExist
 from backend.models.post import Post
 from backend.models.user import User
-from backend.shared.like_type import LikeType
+from backend.shared.content_type import ContentType
 
 
 def get_content(content_type):
-    if content_type == LikeType.POST.value:
+    if content_type == ContentType.POST.value:
         content = Post
-    elif content_type == LikeType.COMMENT.value:
+    elif content_type == ContentType.COMMENT.value:
         content = Comment
-    elif content_type == LikeType.SUB_COMMENT.value:
+    elif content_type == ContentType.SUB_COMMENT.value:
         content = SubComment
     else:
         content = None
@@ -36,7 +36,7 @@ class LikeSaveService:
             if len(likes) > 0:
                 likes[0].update(active=True)
             else:
-                like = Like(content_id=content_id, user_id=user.id, content_type=content_type)
+                like = Like(content_id=content_id, user=user.id, content_type=content_type)
                 like.save()
 
             content = get_content(content_type)
@@ -53,7 +53,7 @@ class LikeRemoveService:
     @classmethod
     def delete(cls, content_id, content_type, user: User):
         try:
-            like = Like.objects.get(Q(content_id=content_id) & Q(content_type=content_type) & Q(user_id=user.id))
+            like = Like.objects(Q(content_id=content_id) & Q(content_type=content_type) & Q(user=user.id)).first()
             like.update(active=False)
 
             content = get_content(content_type)

@@ -17,7 +17,7 @@ class UserLoadService:
 
     @classmethod
     def get_liked_posts(cls, user_id):
-        content_ids = list(map(lambda l: l.content_id, Like.objects(user_id=user_id)))
+        content_ids = list(map(lambda l: l.content_id, Like.objects(user=user_id)))
         return Post.objects(id__in=content_ids)
 
 
@@ -32,4 +32,3 @@ class UserSaveService:
         auth_token = AuthToken(token=token, user=user)
         auth_token.save()
         return auth_token
-

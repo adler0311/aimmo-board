@@ -9,7 +9,7 @@ class SubCommentLoadService:
 
     @classmethod
     def get_many(cls, comment_id):
-        return SubComment.objects(parent_id=comment_id)
+        return SubComment.objects(parent=comment_id)
 
     @classmethod
     def get_one(cls, sub_comment_id):
@@ -18,13 +18,12 @@ class SubCommentLoadService:
 
 class SubCommentSaveService:
     @classmethod
-    def post(cls, content, comment_id, user: User) -> bool:
+    def post(cls, content, post_id, comment_id, user: User) -> bool:
         try:
-            comment = Comment.objects.get(id=comment_id)
-            sub_comment = SubComment(content=content, parent_id=comment_id, writer=user)
+            Comment.objects.get(id=comment_id)
+            sub_comment = SubComment(content=content, parent=comment_id, writer=user, post=post_id)
             sub_comment.save()
 
-            Comment.objects(id=comment.id).update_one(subcomments=[sub_comment] + comment.subcomments)
             return True
         except DoesNotExist:
             return False
@@ -39,14 +38,12 @@ class SubCommentModifyService:
 class SubCommentRemoveService:
     @classmethod
     def delete(cls, comment_id, sub_comment_id):
-        result = SubComment.objects(id=sub_comment_id).delete()
-        if not result:
-            return False
-
         try:
-            comment = Comment.objects.get(id=comment_id)
-            Comment.objects(id=comment.id).update_one(subcomments=list(filter(lambda c: c.id != ObjectId(sub_comment_id), comment.subcomments)))
-
+            Comment.objects.get(id=comment_id)
+            result = SubComment.objects(id=sub_comment_id).delete()
+            
+            if not result:
+                return False
             return True
         except DoesNotExist:
             return False

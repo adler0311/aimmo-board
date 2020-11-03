@@ -13,10 +13,10 @@ from backend.models.comment import Comment
 from lorem_text import lorem
 from backend.views.posts import PostsView
 from backend.views.comments import CommentsView
+from backend.views.subcomments import SubCommentsView
 from backend.views.users import UsersView
 from backend.views.auth import AuthView
 from backend.views.boards import BoardsView
-from backend.views.subcomments import SubcommentsView
 from backend.views.likes import LikesView
 import logging
 
@@ -120,7 +120,7 @@ def create_app():
     BoardsView.register(app, route_base='/boards', base_class=BaseView)
     PostsView.register(app, route_base='/boards/<string:board_id>/posts', base_class=BaseView)
     CommentsView.register(app, route_base='/boards/<string:board_id>/posts/<string:post_id>/comments', base_class=BaseView)
-    SubcommentsView.register(app, route_base='/boards/<string:board_id>/posts/<string:post_id>/comments/<string:comment_id>/sub-comments', base_class=BaseView)
+    SubCommentsView.register(app, route_base='/boards/<string:board_id>/posts/<string:post_id>/comments/<string:comment_id>/sub-comments', base_class=BaseView)
 
     LikesView.register(app, route_base='/likes', base_class=BaseView)
 

@@ -14,7 +14,8 @@ class LikesView(BaseView):
     @route('/')
     @marshal_with(LikeSchema(many=True), code=200)
     def index(self, content_id, content_type):
-        return LikeLoadService.get_many(content_id, content_type)
+        result = LikeLoadService.get_many(content_id, content_type)
+        return result
 
     @token_required
     @use_kwargs(LikeLoadSchema)

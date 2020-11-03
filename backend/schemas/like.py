@@ -1,17 +1,16 @@
-
 from marshmallow import Schema, fields, validate
 
-from backend.shared.like_type import LikeType
+from backend.shared.content_type import ContentType
 
 
 class LikeSchema(Schema):
-    _id = fields.Function(lambda c: str(c.pk))
-    user_id = fields.String(data_key="userId")
-    content_id = fields.String(required=True, data_key="contentId")
-    content_type = fields.String(validate=validate.OneOf(LikeType), required=True, data_key="contentType")
+    id = fields.String()
+    user = fields.String(data_key="userId")
+    content = fields.String(required=True, data_key="contentId")
+    content_type = fields.String(validate=validate.OneOf(ContentType.list()), required=True, data_key="contentType")
     active = fields.Boolean()
 
 
 class LikeLoadSchema(Schema):
     content_id = fields.String(required=True, data_key="contentId")
-    content_type = fields.String(validate=validate.OneOf(LikeType), required=True, data_key="contentType")
+    content_type = fields.String(validate=validate.OneOf(ContentType.list()), required=True, data_key="contentType")

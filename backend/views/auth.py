@@ -1,19 +1,20 @@
 from flask_apispec import use_kwargs, marshal_with
 from flask_classful import route
 
-from backend.schemas.auth import AuthMarshalSchema, AuthLoadSchema
+from backend.schemas.auth import AuthMarshalSchema
 from backend.schemas.base import ResponseErrorSchema
-from backend.services.auth import AuthLoadService, AuthTokenLoadService
+from backend.services.auth import AuthLoadService
 from backend.views.base import BaseView
 from backend.schemas.user import UserBodyLoadSchema
+from backend.views.decorators import token_required
 
 
 class AuthView(BaseView):
 
-    @use_kwargs(AuthLoadSchema)
+    @token_required
     @marshal_with(AuthMarshalSchema, code=200)
-    def get(self, token):
-        return AuthTokenLoadService.get_auth_token(token)
+    def get(self, **kwargs):
+        return kwargs['auth_token']
 
     @use_kwargs(UserBodyLoadSchema)
     @route('', methods=['POST'])
@@ -26,4 +27,3 @@ class AuthView(BaseView):
             return None, 404
 
         return result, 201
-

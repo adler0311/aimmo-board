@@ -34,6 +34,6 @@ class UsersView(FlaskView):
 
     @token_required
     @route('/comments')
-    @marshal_with(CommentSchema(many=True, exclude=['subcomments']), code=200)
+    @marshal_with(CommentSchema(many=True, exclude=['sub_comments']), code=200)
     def get_user_comments(self, auth_token):
         return UserLoadService.get_comments(auth_token.user.id)

@@ -20,11 +20,9 @@ class CommentSaveService:
     @classmethod
     def post(cls, post_id, user: User, content):
         try:
-            post = Post.objects.get(id=post_id)
-            comment = Comment(content=content, post_id=post_id, writer=user)
+            Post.objects.get(id=post_id)
+            comment = Comment(content=content, post=post_id, writer=user)
             comment.save()
-
-            Post.objects(id=post.id).update_one(comments=[comment] + post.comments)
             return True
         except DoesNotExist:
             return False
@@ -33,16 +31,19 @@ class CommentSaveService:
 class CommentModifyService:
     @classmethod
     def update(cls, comment_id, content):
-        return Comment.objects(id=comment_id).update_one(content=content)
+        try:
+            Comment.objects(id=comment_id).update_one(content=content)
+            return True
+        except DoesNotExist:
+            return False
 
 
 class CommentRemoveService:
     @classmethod
     def delete(cls, post_id, comment_id):
         try:
+            Post.objects.get(id=post_id)
             Comment.objects(id=comment_id).delete()
-            post = Post.objects.get(id=post_id)
-            Post.objects(id=post.id).update_one(comments=list(filter(lambda c: c.id != ObjectId(comment_id), post.comments)))
             return True
         except DoesNotExist:
             return False
@@ -52,5 +53,4 @@ class CommentCheckService:
     @classmethod
     def is_writer(cls, comment_id, auth_token_user_id):
         comment = Comment.objects.get(id=comment_id)
-
         return comment.writer.id == auth_token_user_id
