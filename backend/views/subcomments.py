@@ -11,7 +11,6 @@ from backend.views.decorators import token_required
 
 class SubCommentsView(BaseView):
 
-    @route('')
     @marshal_with(SubcommentSchema(many=True), code=200)
     def index(self, comment_id, **kwargs):
         return SubComment.objects(parent=comment_id)
@@ -25,7 +24,7 @@ class SubCommentsView(BaseView):
 
     @token_required
     @use_kwargs(SubCommentLoadSchema)
-    @route('', methods=['POST'])
+    @route('/', methods=['POST'])
     @marshal_with(ResponseSuccessSchema, code=201)
     @marshal_with(ResponseErrorSchema, code=404)
     def post(self, post_id, comment_id, content, **kwargs):

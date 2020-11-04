@@ -115,15 +115,16 @@ def create_app():
     app = Flask(__name__)
     app.config.from_object(get_current_config())
 
-    AuthView.register(app, route_base='/auth', base_class=BaseView)
-    UsersView.register(app, route_base='/users', base_class=BaseView)
+    AuthView.register(app, route_base='/auth', base_class=BaseView, trailing_slash=False)
+    UsersView.register(app, route_base='/users', base_class=BaseView, trailing_slash=False)
 
-    BoardsView.register(app, route_base='/boards', base_class=BaseView)
-    PostsView.register(app, route_base='/boards/<string:board_id>/posts', base_class=BaseView)
+    BoardsView.register(app, route_base='/boards', base_class=BaseView, trailing_slash=False)
+    PostsView.register(app, route_base='/boards/<string:board_id>/posts', base_class=BaseView, trailing_slash=False)
     CommentsView.register(app, route_base='/boards/<string:board_id>/posts/<string:post_id>/comments', base_class=BaseView, trailing_slash=False)
-    SubCommentsView.register(app, route_base='/boards/<string:board_id>/posts/<string:post_id>/comments/<string:comment_id>/sub-comments', base_class=BaseView)
+    SubCommentsView.register(app, route_base='/boards/<string:board_id>/posts/<string:post_id>/comments/<string:comment_id>/sub-comments', base_class=BaseView,
+                             trailing_slash=False)
 
-    LikesView.register(app, route_base='/likes', base_class=BaseView)
+    LikesView.register(app, route_base='/likes', base_class=BaseView, trailing_slash=False)
 
     @app.errorhandler(DoesNotExist)
     def handle_document_does_not_exist(e):

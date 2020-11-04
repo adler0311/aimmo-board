@@ -20,7 +20,7 @@ class PostsView(BaseView):
 
     @token_required
     @use_kwargs(PostBodyLoadSchema)
-    @route('', methods=['POST'])
+    @route('/', methods=['POST'])
     @marshal_with(ResponseSuccessSchema, code=201)
     @marshal_with(ResponseErrorSchema, code=404)
     def post(self, board_id, title, content):
@@ -29,7 +29,7 @@ class PostsView(BaseView):
 
     @token_required
     @use_kwargs(PostBodyLoadSchema)
-    @route('/<post_id>', methods=['PUT'])
+    @route('/<string:post_id>', methods=['PUT'])
     @marshal_with(ResponseSuccessSchema, code=200)
     @marshal_with(ResponseErrorSchema, code=404)
     def put(self, board_id, post_id, title, content, **kwargs):
@@ -38,7 +38,7 @@ class PostsView(BaseView):
         return None, 200
 
     @token_required
-    @route('/<post_id>', methods=['DELETE'])
+    @route('/<string:post_id>', methods=['DELETE'])
     @marshal_with(ResponseSuccessSchema, code=200)
     @marshal_with(ResponseErrorSchema, code=404)
     def delete(self, post_id, **kwargs):

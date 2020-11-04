@@ -17,7 +17,7 @@ class AuthView(BaseView):
         return kwargs['auth_token']
 
     @use_kwargs(UserBodyLoadSchema)
-    @route('', methods=['POST'])
+    @route('/', methods=['POST'])
     @marshal_with(AuthMarshalSchema(only=['token', 'user']), code=201)
     @marshal_with(ResponseErrorSchema, code=404)
     def post(self, user_id, password):

@@ -16,7 +16,7 @@ from backend.views.decorators import token_required
 class UsersView(FlaskView):
 
     @use_kwargs(UserBodyLoadSchema)
-    @route('', methods=['POST'])
+    @route('/', methods=['POST'])
     @marshal_with(AuthMarshalSchema(only=['token', 'user']), code=201)
     def post(self, user_id, password):
         auth_token = UserSaveService.signup(user_id, password)
