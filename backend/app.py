@@ -1,4 +1,5 @@
 from backend.config import get_current_config
+from backend.errors import ApiError
 from backend.views.base import BaseView
 from backend.models.like import Like
 from backend.models.subcomment import SubComment
@@ -11,7 +12,7 @@ from backend.models.user import User
 from backend.models.auth_token import AuthToken
 from backend.models.comment import Comment
 from lorem_text import lorem
-from backend.views.posts import ApiError, PostsView
+from backend.views.posts import PostsView
 from backend.views.comments import CommentsView
 from backend.views.subcomments import SubCommentsView
 from backend.views.users import UsersView
@@ -119,7 +120,7 @@ def create_app():
 
     BoardsView.register(app, route_base='/boards', base_class=BaseView)
     PostsView.register(app, route_base='/boards/<string:board_id>/posts', base_class=BaseView)
-    CommentsView.register(app, route_base='/boards/<string:board_id>/posts/<string:post_id>/comments', base_class=BaseView)
+    CommentsView.register(app, route_base='/boards/<string:board_id>/posts/<string:post_id>/comments', base_class=BaseView, trailing_slash=False)
     SubCommentsView.register(app, route_base='/boards/<string:board_id>/posts/<string:post_id>/comments/<string:comment_id>/sub-comments', base_class=BaseView)
 
     LikesView.register(app, route_base='/likes', base_class=BaseView)

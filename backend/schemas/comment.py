@@ -9,7 +9,6 @@ class CommentSchema(Schema):
     writer = fields.Nested(UserMarshalSchema)
     post_id = fields.Str(required=False)
     created = fields.Str()
-    sub_comments = fields.Nested(SubcommentSchema(many=True))
     likes = fields.Number()
 
 

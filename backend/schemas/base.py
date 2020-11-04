@@ -8,8 +8,6 @@ class ResponseErrorSchema(Schema):
         if status_code == 404:
             return "document matching id does not exist"
 
-        raise NotImplemented
-
 
 class ResponseSuccessSchema(Schema):
     result = fields.Boolean(default=True)

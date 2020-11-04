@@ -1,10 +1,12 @@
 from mongoengine.fields import BooleanField
 from mongoengine.queryset.manager import queryset_manager
-from mongoengine.queryset.queryset import QuerySet, BaseQuerySet
+from mongoengine.queryset.queryset import QuerySet
 
 from backend.models.board import Board
 from backend.models.content import Content
 from mongoengine import StringField, ReferenceField
+
+from backend.models.user import User
 
 
 class Post(Content):
@@ -28,3 +30,22 @@ class Post(Content):
 
         result = result.order_by('-' + order_type)
         return result[:limit]
+
+    @classmethod
+    def save_post(cls, board_id, title, content, user):
+        board: Board = Board.objects.get(id=board_id)
+        post = Post(board=board, title=title, content=content, writer=user)
+        post.save()
+
+    @classmethod
+    def update_post(cls, board_id, post_id, title, content, requester: User):
+        board: Board = Board.objects.get(id=board_id)
+        post: Post = Post.objects.get(id=post_id)
+        post.check_writer(requester)
+        post.update(board=board.id, title=title, content=content)
+
+    @classmethod
+    def delete_post(cls, post_id, requester):
+        post: Post = Post.objects.get(id=post_id)
+        post.check_writer(requester)
+        post.delete()

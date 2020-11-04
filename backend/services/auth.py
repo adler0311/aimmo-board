@@ -18,9 +18,3 @@ class AuthLoadService:
         auth_token.save()
 
         return auth_token
-
-
-class AuthTokenLoadService:
-    @classmethod
-    def get_auth_token(cls, token):
-        return AuthToken.objects.get(token=token)

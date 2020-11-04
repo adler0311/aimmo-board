@@ -1,5 +1,7 @@
 from mongoengine import Document, StringField, ReferenceField, DateTimeField
 from mongoengine.fields import IntField
+
+from backend.errors import ForbiddenError
 from backend.models.user import User
 import datetime
 
@@ -17,3 +19,17 @@ class Content(Document):
 
     def is_writer(self, user):
         return self.writer.id == user.id
+
+    def check_writer(self, user):
+        if not self.is_writer(user):
+            raise ForbiddenError('작성자가 아닙니다')
+
+    @classmethod
+    def increase_like(cls, content_id, content):
+        content = content.objects.get(id=content_id)
+        content.update(likes=content.likes + 1 if content.likes is not None else 1)
+
+    @classmethod
+    def decrease_like(cls, content_id, content):
+        content = content.objects.get(id=content_id)
+        content.update(likes=content.likes - 1 if content.likes is not None else 0)

@@ -1,20 +1,11 @@
 from backend.models.like import Like
 from backend.models.post import Post
-from backend.models.comment import Comment
 from backend.models.user import User
 from backend.utils import Utils
 from backend.models.auth_token import AuthToken
 
 
-class UserLoadService:
-    @classmethod
-    def get_posts(cls, user_id):
-        return Post.objects(writer=user_id)
-
-    @classmethod
-    def get_comments(cls, user_id):
-        return Comment.objects(writer=user_id)
-
+class UserContentsLoadService:
     @classmethod
     def get_liked_posts(cls, user_id):
         content_ids = list(map(lambda l: l.content_id, Like.objects(user=user_id)))
