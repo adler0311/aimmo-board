@@ -1,4 +1,3 @@
-from backend.schemas.subcomment import SubcommentSchema
 from marshmallow import Schema, fields, validate
 from backend.schemas.user import UserMarshalSchema
 from backend.shared.comments_order_type import CommentsOrderType

@@ -9,7 +9,6 @@ class PostSchema(Schema):
     id = fields.String()
     title = fields.String(required=True)
     content = fields.String(required=True)
-    # writer = fields.Nested(UserMarshalSchema)
     comments = fields.Integer()
     created = fields.String()
     likes = fields.Integer()

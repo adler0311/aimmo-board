@@ -12,13 +12,13 @@ def token_required(func):
     def wrapper(*args, **kwargs):
         token = request.headers.get('Authorization')
         if token is None:
-            return jsonify({'message': 'token required'}), 401
+            return ApiError(message='token required', status_code=401)
 
         try:
             auth_token = AuthToken.objects.get(token=token)
 
         except DoesNotExist:
-            return jsonify({'message': 'not authenticated'}), 401
+            return ApiError(message='not authenticated', status_code=401)
 
         g.user = auth_token.user
         return func(*args, **kwargs)
@@ -33,7 +33,7 @@ def handle_internal_server_error(func):
             return func(*args, **kwargs)
         except RuntimeError as e:
             logging.debug(e)
-            return jsonify({'message': 'Internal Server Error'}), 500
+            return ApiError(message='Internal Server Error', status_code=500)
 
     return wrapper
 
