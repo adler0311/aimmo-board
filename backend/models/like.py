@@ -46,7 +46,7 @@ class Like(Document):
 
     @classmethod
     def deactivate_like(cls, content_id, content_type, user):
-        like = Like.objects(Q(content_id=content_id) & Q(content_type=content_type) & Q(user=user.id)).first()
+        like = Like.objects(Q(content_id=content_id) & Q(content_type=content_type) & Q(user=user.id)).get()
         like.update(active=False)
 
         Content.decrease_like(content_id, get_content_model(content_type))

@@ -13,3 +13,8 @@ class UserLoadSchema(Schema):
 class UserMarshalSchema(Schema):
     _id = fields.Function(lambda u: str(u.pk))
     user_id = fields.Str(data_key="userId")
+
+
+class UserGetSchema(Schema):
+    id = fields.String()
+    user_id = fields.Str(data_key="userId")

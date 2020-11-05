@@ -1,22 +1,34 @@
 from flask import g
 from flask_apispec import use_kwargs, marshal_with
+from mongoengine import QuerySet
 
+from backend.models.subcomment import SubComment
 from backend.schemas.base import ResponseErrorSchema, ResponseSuccessSchema
+from backend.utils import Utils
 from backend.views.base import BaseView
 from flask_classful import route
 from backend.models.comment import Comment
-from backend.schemas.comment import CommentSchema, CommentLoadSchema
+from backend.schemas.comment import CommentGetSchema, CommentsLoadSchema, CommentLoadSchema, CommentsSchema
 from backend.views.decorators import token_required
 
 
 class CommentsView(BaseView):
 
-    @marshal_with(CommentSchema(many=True), code=200)
-    def index(self, board_id, post_id):
-        return Comment.objects(post=post_id)
+    @use_kwargs(CommentsLoadSchema, location='query')
+    @route('/')
+    @marshal_with(CommentsSchema, code=200)
+    def index(self, board_id, post_id, order_type, page, limit):
+        queryset: QuerySet = Comment.objects(post=post_id)
+        start, end = Utils.page_limit_to_start_end(page, limit)
+        ordered_comments = Comment.order_by_type(queryset, order_type)[start:end]
+        for comment in ordered_comments:
+            comment.user_id = comment.writer.user_id
+            comment.sub_comments = SubComment.get_count_of_comment(comment.id)
+
+        return {'count': queryset.count(), 'comments': ordered_comments}
 
     @route('/<string:comment_id>', methods=['GET'])
-    @marshal_with(CommentSchema, code=200)
+    @marshal_with(CommentGetSchema, code=200)
     @marshal_with(ResponseErrorSchema, code=404)
     def get(self, comment_id, **kwargs):
         return Comment.objects.get(id=comment_id)

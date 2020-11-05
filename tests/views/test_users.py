@@ -2,12 +2,14 @@ import json
 from typing import List
 
 import pytest
+from bson import ObjectId
 from flask import Response, url_for
 
 from backend.models.auth_token import AuthToken
 from backend.models.like import Like
 from tests.factories.like import LikeFactory
 from tests.factories.post import PostFactory
+from tests.factories.user import UserFactory
 
 
 class Describe_UsersView:
@@ -108,3 +110,28 @@ class Describe_UsersView:
 
             def test_401을_반환한다(self, subject: Response):
                 assert subject.status_code == 401
+
+    class Describe_get:
+        @pytest.fixture
+        def user(self):
+            return UserFactory.create(user_id='테스트 유저')
+
+        @pytest.fixture
+        def user_id(self, user):
+            return user.user_id
+
+        @pytest.fixture
+        def subject(self, client, user_id):
+            url = url_for('UsersView:get', user_id=user_id)
+            return client.get(url)
+
+        def test_200을_반환한다(self, subject):
+            assert subject.status_code == 200
+
+        class Context_유저가_없는_경우:
+            @pytest.fixture
+            def user_id(self):
+                return ObjectId()
+
+            def test_404를_반환한다(self, subject):
+                assert subject.status_code == 404

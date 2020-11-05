@@ -1,11 +1,9 @@
 from enum import Enum
 
+from backend.shared.base_type import BaseType
 
-class PostOrderType(Enum):
+
+class PostOrderType(BaseType):
     CREATED = 'created'
     COMMENT = 'comments'
     LIKE = 'likes'
-
-    @staticmethod
-    def list():
-        return list(map(lambda o: o.value, PostOrderType))

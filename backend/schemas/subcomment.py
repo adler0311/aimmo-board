@@ -1,10 +1,10 @@
-from marshmallow import Schema, fields
+from marshmallow import Schema, fields, validate
 
 from backend.schemas.user import UserMarshalSchema
 
 
 class SubcommentSchema(Schema):
-    _id = fields.Function(lambda c: str(c.pk))
+    id = fields.String()
     content = fields.Str(required=True)
     writer = fields.Nested(UserMarshalSchema())
     post_id = fields.Str(required=False)
@@ -15,3 +15,8 @@ class SubcommentSchema(Schema):
 
 class SubCommentLoadSchema(Schema):
     content = fields.String(required=True)
+
+
+class SubCommentsLoadSchema(Schema):
+    page = fields.Integer(validate=validate.Range(min=1), missing=1)
+    limit = fields.Integer(validate=validate.Range(min=1), missing=10)

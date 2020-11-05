@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import factory
 from dateutil.tz import UTC
@@ -17,3 +17,14 @@ class SubCommentFactory(factory.mongoengine.MongoEngineFactory):
     created = fuzzy.FuzzyDateTime(datetime(2020, 10, 12, tzinfo=UTC))
     post = factory.SubFactory(PostFactory)
     parent = factory.SubFactory(CommentFactory)
+
+    @classmethod
+    def create_batch_in_created_desc(cls, size, **kwargs):
+        now = datetime.now()
+
+        comments = []
+        for _ in range(size):
+            comment = cls.create(created=now, parent=kwargs['parent_id'], writer=kwargs['writer'])
+            comments.append(comment)
+            now -= timedelta(minutes=1)
+        return comments

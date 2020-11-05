@@ -4,9 +4,11 @@ from mongoengine.queryset.queryset import QuerySet
 
 from backend.models.board import Board
 from backend.models.content import Content
-from mongoengine import StringField, ReferenceField
+from mongoengine import Q, StringField, ReferenceField
 
 from backend.models.user import User
+
+SUMMARY_LENGTH = 20
 
 
 class Post(Content):
@@ -49,3 +51,37 @@ class Post(Content):
         post: Post = Post.objects.get(id=post_id)
         post.check_writer(requester)
         post.delete()
+
+    @classmethod
+    def get_recent_posts_by_user(cls, user_id, limit):
+        queryset: QuerySet = Post.objects(writer=user_id)
+        queryset = queryset.only('title', 'content')
+        queryset = queryset.order_by('-created')
+
+        for post in queryset:
+            post.title = post.title[:SUMMARY_LENGTH]
+            post.content = post.content[:SUMMARY_LENGTH]
+
+        return queryset[:limit]
+
+    @classmethod
+    def get_popular_posts_by_user(cls, user_id, limit):
+        queryset: QuerySet = Post.objects(writer=user_id)
+        queryset = queryset.only('title', 'likes', 'created')
+        queryset = queryset.order_by('-likes')
+        return queryset[:limit]
+
+    @classmethod
+    def get_adjacent_posts(cls, board_id, post_id, limit):
+        target: Post = Post.objects.get(id=post_id)
+        created = target.created
+
+        def query_with_created_compare_query(created_compare_query: Q):
+            return Post.objects(created_compare_query & Q(board=board_id)) \
+                       .only('title', 'likes', 'created') \
+                       .order_by('-created')[:limit]
+
+        upper_posts = query_with_created_compare_query(Q(created__gt=created))
+        lower_posts = query_with_created_compare_query(Q(created__lt=created))
+
+        return list(upper_posts) + [target] + list(lower_posts)

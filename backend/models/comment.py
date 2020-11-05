@@ -1,9 +1,9 @@
-from backend.errors import ForbiddenError
 from backend.models.content import Content
-from mongoengine import ReferenceField
+from mongoengine import QuerySet, ReferenceField
 
 from backend.models.post import Post
 from backend.models.user import User
+from backend.shared.comments_order_type import CommentsOrderType
 
 
 class Comment(Content):
@@ -30,7 +30,9 @@ class Comment(Content):
         cls.check_writer(comment, user)
         comment.delete()
 
-    # @classmethod
-    # def check_writer(cls, comment, user: User):
-    #     if comment.is_writer(user):
-    #         raise ForbiddenError(message="작성자만 삭제가 가능합니다")
+    @classmethod
+    def order_by_type(cls, queryset: QuerySet, order_type):
+        if order_type == CommentsOrderType.BEST.value:
+            return queryset.order_by('-likes')
+        else:
+            return queryset.order_by('-created')

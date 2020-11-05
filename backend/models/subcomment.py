@@ -1,6 +1,6 @@
 from backend.models.comment import Comment
 from backend.models.content import Content
-from mongoengine import ReferenceField
+from mongoengine import QuerySet, ReferenceField
 
 from backend.models.post import Post
 
@@ -16,7 +16,8 @@ class SubComment(Content):
         sub_comment.save()
 
     @classmethod
-    def update_sub_comment(cls, sub_comment_id, content, requester):
+    def update_sub_comment(cls, comment_id, sub_comment_id, content, requester):
+        Comment.objects.get(id=comment_id)
         sub_comment: SubComment = SubComment.objects.get(id=sub_comment_id)
         sub_comment.check_writer(requester)
         return sub_comment.update(content=content)
@@ -27,3 +28,8 @@ class SubComment(Content):
         sub_comment: SubComment = SubComment.objects.get(id=sub_comment_id)
         sub_comment.check_writer(requester)
         sub_comment.delete()
+
+    @classmethod
+    def get_count_of_comment(cls, comment_id):
+        queryset: QuerySet = cls.objects(parent=comment_id)
+        return queryset.count()

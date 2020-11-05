@@ -1,11 +1,9 @@
 from enum import Enum
 
+from backend.shared.base_type import BaseType
 
-class ContentType(Enum):
+
+class ContentType(BaseType):
     POST = 'post'
     COMMENT = 'comment'
     SUB_COMMENT = 'sub_comment'
-
-    @staticmethod
-    def list():
-        return list(map(lambda c: c.value, ContentType))

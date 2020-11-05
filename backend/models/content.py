@@ -15,7 +15,7 @@ class Content(Document):
     likes = IntField()
     created = DateTimeField(default=datetime.datetime.now)
 
-    meta = {'abstract': True}
+    meta = {'abstract': True, 'indexes': ['created', 'likes']}
 
     def is_writer(self, user):
         return self.writer.id == user.id
@@ -27,9 +27,9 @@ class Content(Document):
     @classmethod
     def increase_like(cls, content_id, content):
         content = content.objects.get(id=content_id)
-        content.update(likes=content.likes + 1 if content.likes is not None else 1)
+        content.update(inc__likes=1)
 
     @classmethod
     def decrease_like(cls, content_id, content):
-        content = content.objects.get(id=content_id)
-        content.update(likes=content.likes - 1 if content.likes is not None else 0)
+        content: Content = content.objects.get(id=content_id)
+        content.update(dec__likes=1)

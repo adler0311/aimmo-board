@@ -3,11 +3,12 @@ from flask_apispec import use_kwargs, marshal_with
 
 from backend.models.comment import Comment
 from backend.models.post import Post
+from backend.models.user import User
 from backend.schemas.auth import AuthMarshalSchema
 from backend.schemas.post import PostSchema
 from backend.schemas.comment import CommentSchema
 from flask_classful import FlaskView, route
-from backend.schemas.user import UserLoadSchema, UserBodyLoadSchema
+from backend.schemas.user import UserGetSchema, UserLoadSchema, UserBodyLoadSchema
 from backend.services.user import UserSaveService, UserContentsLoadService
 from backend.shared.user_post_type import UserPostType
 from backend.views.decorators import token_required
@@ -40,3 +41,8 @@ class UsersView(FlaskView):
     @marshal_with(CommentSchema(many=True), code=200)
     def get_user_comments(self):
         return Comment.objects(writer=g.user.id)
+
+    @route('/<string:user_id>')
+    @marshal_with(UserGetSchema)
+    def get(self, user_id):
+        return User.objects.get(user_id=user_id)

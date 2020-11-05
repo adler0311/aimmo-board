@@ -26,7 +26,7 @@ class Describe_CommentsView:
 
     @pytest.fixture(autouse=True)
     def comments(self, post, auth_token: AuthToken):
-        return CommentFactory.create_batch(20, post=post.id, writer=auth_token.user)
+        return CommentFactory.create_batch(50, post=post.id, writer=auth_token.user)
 
     @pytest.fixture
     def headers(self, token_header):
@@ -34,16 +34,40 @@ class Describe_CommentsView:
 
     class Describe_index:
         @pytest.fixture
-        def subject(self, client, board, post_id):
+        def params(self):
+            return {'page': 3, 'limit': 10}
+
+        @pytest.fixture
+        def subject(self, client, board, post_id, params):
             url = url_for('CommentsView:index', board_id=board.id, post_id=post_id)
-            return client.get(url)
+            return client.get(url, query_string=params)
 
         def test_200을_반환한다(self, subject: Response):
             assert subject.status_code == 200
 
+        def test_전체_댓글_수를_반환한다(self, subject):
+            data = subject.json
+            assert 'count' in data
+
         def test_댓글_목록을_반환한다(self, subject: Response):
             data = subject.json
-            assert len(data) == 20
+            assert 'comments' in data
+            comments = data['comments']
+            for comment in comments:
+                assert 'userId' in comment
+                assert 'content' in comment
+                assert 'created' in comment
+                assert 'sub_comments' in comment
+                assert 'likes' in comment
+
+        def test_count_필드에는_전체_댓글_수를_내려준다(self, subject):
+            data = subject.json
+            assert data['count'] == 50
+
+        def test_limit_갯수의_댓글을_내려준다(self, subject):
+            data = subject.json
+            comments = data['comments']
+            assert len(comments) == 10
 
         class Context_게시글이_없는_경우:
             @pytest.fixture
@@ -53,7 +77,74 @@ class Describe_CommentsView:
             def test_빈_목록을_반환한다(self, subject: Response):
                 assert subject.status_code == 200
                 data = subject.json
-                assert len(data) == 0
+                assert data['count'] == 0
+
+        class Context_정렬_기준이_없는_경우:
+            def test_최신순으로_가져온다(self, subject):
+                data = subject.json
+                comments = data['comments']
+                for i in range(len(comments) - 1):
+                    assert comments[i]['created'] > comments[i + 1]['created']
+
+        class Context_정렬_기준이_있는_경우:
+            class Context_정렬_기준이_best인_경우:
+                @pytest.fixture
+                def params(self):
+                    return {'orderType': 'best'}
+
+                def test_좋아요_많은_순으로_가져온다(self, subject):
+                    data = subject.json
+                    comments = data['comments']
+                    for i in range(len(comments) - 1):
+                        assert comments[i]['likes'] >= comments[i + 1]['likes']
+
+            class Context_정렬_기준이_created인_경우:
+                @pytest.fixture
+                def params(self):
+                    return {'orderType': 'recent'}
+
+                def test_최신_순으로_가져온다(self, subject):
+                    data = subject.json
+                    comments = data['comments']
+                    for i in range(len(comments) - 1):
+                        assert comments[i]['created'] > comments[i + 1]['created']
+
+        class Context_page_파라미터가_없는_경우:
+            @pytest.fixture
+            def params(self):
+                return None
+            
+            @pytest.fixture(autouse=True)
+            def comments_order_by_created(self, post, auth_token):
+                return CommentFactory.create_batch_in_created_desc(20, post_id=post.id, writer=auth_token.user)
+
+            def test_1페이지_목록을_내려준다(self, subject, comments_order_by_created):
+                data = subject.json
+                comments = data['comments']
+                for i, comment in enumerate(comments):
+                    assert comment['id'] == str(comments_order_by_created[i].id)
+
+        class Context_page_파라미터가_0이하인_경우:
+            @pytest.fixture
+            def params(self):
+                return {'page': 0}
+
+            def test_422를_반환한다(self, subject):
+                assert subject.status_code == 422
+
+        class Context_limit_파라미터가_없는_경우:
+            def test_10개의_목록을_내려준다(self, subject):
+                data = subject.json
+                comments = data['comments']
+                assert len(comments) == 10
+
+        class Context_limit_파라미터가_0이하인_경우:
+            @pytest.fixture
+            def params(self):
+                return {'limit': 0}
+
+            def test_422를_반환한다(self, subject):
+                assert subject.status_code == 422
 
     class Describe_get:
         @pytest.fixture

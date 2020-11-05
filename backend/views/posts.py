@@ -4,7 +4,11 @@ from flask_classful import route
 
 from backend.models.post import Post
 from backend.schemas.base import ResponseSuccessSchema, ResponseErrorSchema
-from backend.schemas.post import PostBodyLoadSchema, PostLoadSchema, PostSchema
+from backend.schemas.post import AdjacentBoardPostLoadSchema, AdjacentBoardPostSchema, PopularPostLoadSchema, PopularPostSchema, PostBodyLoadSchema, \
+    PostDetailsSchema, PostLoadSchema, \
+    PostSchema, \
+    RecentPostLoadSchema, \
+    RecentPostSchema
 from backend.services.post import PostLoadService
 from backend.views.base import BaseView
 from backend.views.decorators import token_required
@@ -44,3 +48,26 @@ class PostsView(BaseView):
     def delete(self, post_id, **kwargs):
         Post.delete_post(post_id, g.user)
         return '', 200
+
+    @route('/<string:post_id>')
+    @marshal_with(PostDetailsSchema, code=200)
+    def get(self, post_id, **kwargs):
+        return PostLoadService.post_with_details(post_id), 200
+
+    @use_kwargs(RecentPostLoadSchema, location='query')
+    @route('/recents')
+    @marshal_with(RecentPostSchema(many=True), code=200)
+    def get_recent_posts_of_user(self, user_id, limit, **kwargs):
+        return Post.get_recent_posts_by_user(user_id, limit), 200
+
+    @use_kwargs(PopularPostLoadSchema, location='query')
+    @route('/populars')
+    @marshal_with(PopularPostSchema(many=True), code=200)
+    def get_popular_posts_of_user(self, user_id, limit, **kwargs):
+        return Post.get_popular_posts_by_user(user_id, limit), 200
+
+    @use_kwargs(AdjacentBoardPostLoadSchema, location='query')
+    @route('/<string:post_id>/adjacents')
+    @marshal_with(AdjacentBoardPostSchema(many=True), 200)
+    def get_adjacent_board_posts(self, board_id, post_id, limit, **kwargs):
+        return Post.get_adjacent_posts(board_id, post_id, limit), 200
